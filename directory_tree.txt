@@ -8,6 +8,7 @@ C:.
 ¦   manage.py
 ¦   Pipfile
 ¦   Pipfile.lock
+¦   Procfile
 ¦   
 +---authentication
 ¦   ¦   admin.py
@@ -52,7 +53,6 @@ C:.
     ¦   base.html
     ¦   base_auth.html
     ¦   index.html
-    ¦   Procfile
     ¦   
     +---authentication
     ¦       login.html

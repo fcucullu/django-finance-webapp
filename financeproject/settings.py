@@ -13,25 +13,23 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from dotenv import load_dotenv
 from pathlib import Path
-import django_heroku
-django_heroku.settings(locals())
 
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#=j_k=g47!j6r9vb2&q)4jb5gm!#yr==)-$vvohf_z1g+o7r&j'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-#=j_k=g47!j6r9vb2&q)4jb5gm!#yr==)-$vvohf_z1g+o7r&j')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 
 # Application definition
 
@@ -42,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'expenses'
+    'expenses',
 ]
 
 MIDDLEWARE = [
@@ -75,21 +73,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'financeproject.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-load_dotenv()
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('DB_NAME'),
         'USER': os.environ.get('DB_USER'),
         'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST':os.environ.get('DB_HOST'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT', '5432'),  # Default PostgreSQL port
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -109,7 +105,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -121,17 +116,18 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS=[os.path.join(BASE_DIR, 'financeproject/static')]
-STATIC_ROOT=os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'financeproject/static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Changed from 'static' to 'staticfiles' to avoid conflicts
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Activate Django-Heroku.
+import django_heroku
 django_heroku.settings(locals())
