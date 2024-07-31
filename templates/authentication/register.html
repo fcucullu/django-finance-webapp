@@ -13,6 +13,7 @@
         </div>
 
         <form action="" method="post">
+
           <div class="form-group">
             <input
               type="text"
@@ -22,9 +23,9 @@
               class="form-control form-control-sm"
             />
           </div>
-          <div class="invalid_feedback invalid-feedback" style="display:none">
-              
-          </div>
+          <div class="username_invalid_feedback invalid-feedback" style="display:none"></div>
+          <p class="text-sm text-success usernameSuccessOutput"></p>
+
           <div class="form-group">
             <input
               type="email"
@@ -34,6 +35,9 @@
               class="form-control form-control-sm"
             />
           </div>
+          <div class="email_invalid_feedback invalid-feedback" style="display:none"></div>
+          <p class="text-sm text-success emailSuccessOutput"></p>
+
           <div class="form-group">
             <input
               type="password"
@@ -44,6 +48,7 @@
             />
             <small class="float-right py-3">SHOW</small>
           </div>
+
           <input
             type="submit"
             value="Register"
