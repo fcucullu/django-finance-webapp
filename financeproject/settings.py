@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from dotenv import load_dotenv
 from pathlib import Path
+from django.contrib import messages
 
 # Load environment variables from .env file
 load_dotenv()
@@ -131,3 +132,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Activate Django-Heroku.
 import django_heroku
 django_heroku.settings(locals())
+
+MESSAGE_TAGS={
+    messages.ERROR: 'danger'
+}
