@@ -1,3 +1,41 @@
+/* Ensure the container-fluid spans the full width */
+.container-fluid {
+  padding-left: 0;
+  padding-right: 0;
+  width: 100vw; /* Ensures the container takes the full viewport width */
+  box-sizing: border-box; /* Includes padding and border in the element's total width and height */
+}
+
+/* Ensure that no additional constraints are applied to the container-fluid */
+.col-md-3, .col-md-6 {
+  padding: 0; /* Remove padding if not needed */
+}
+
+/* Center the card within its parent container */
+.card {
+  margin: auto; /* Centers the card horizontally */
+}
+
+/* Optional: Adjust column sizes for responsiveness */
+@media (max-width: 767px) {
+  .col-md-5 {
+    max-width: 100%; /* Full width on small screens */
+  }
+}
+
+@media (min-width: 768px) {
+  .col-md-5 {
+    max-width: 80%; /* Adjust width for medium screens */
+  }
+}
+
+@media (min-width: 992px) {
+  .col-lg-4 {
+    max-width: 50%; /* Adjust width for large screens */
+  }
+}
+
+/* Styles for placeholder images */
 .bd-placeholder-img {
   font-size: 1.125rem;
   text-anchor: middle;
@@ -13,6 +51,7 @@
   }
 }
 
+/* Styles for the password toggle button */
 .showPasswordToggle {
   cursor: pointer;
   transition: all;

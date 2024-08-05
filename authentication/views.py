@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 import json
 from validate_email import validate_email
-from django.contrib import messages
+from django.contrib import messages, auth
 from django.core.mail import EmailMessage
 from django.urls import reverse
 from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeError
@@ -79,7 +79,7 @@ class RegistrationView(View):
                 email.send(fail_silently=False)
                 
                 
-                messages.success(request, "Account successfully created!")
+                messages.success(request, "Account successfully created! Check your email to activate your user")
                 return render(request, 'authentication/register.html')
             
         #messages.success(request, 'Success')
@@ -104,7 +104,7 @@ class VerificationView(View):
             user.is_active = True
             user.save()
 
-            messages.success(request, 'Account activated successfully')
+            messages.success(request, 'Account activated successfully! Now, please login')
             return redirect('login')
         
         except Exception as ex:
@@ -113,5 +113,39 @@ class VerificationView(View):
         return redirect('login')
     
 class LoginView(View):
-    def get(self, request, uidb64, token):
-        return redirect('authentication/login.html')
+    def get(self, request):
+        return render(request, 'authentication/login.html')  # Render the login page template
+    
+    def post(self, request):
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        if username and password:
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                user = None
+
+            if user:
+                if user.is_active:
+                    user = auth.authenticate(username=username, password=password)
+                    if user:
+                        auth.login(request, user)
+                        messages.success(request, f'Welcome, {user.username}!\nYou are now logged in')
+                        return redirect('expenses')  # Redirect to a homepage or dashboard after login
+                    else:
+                        messages.error(request, 'Invalid credentials, please try again')
+                else:
+                    messages.error(request, 'Your account is not active. Please check your email')
+            else:
+                messages.error(request, 'Invalid credentials, please try again')
+        else:
+            messages.error(request, 'Please fill all fields')
+
+        return render(request, 'authentication/login.html')  # Render the login page with errors
+    
+class LogoutView(View):
+    def post(self, request):
+        auth.logout(request)
+        messages.success(request, 'You have been logged out')
+        return redirect('login')

@@ -1,0 +1,93 @@
+Listado de rutas de carpetas para el volumen Windows
+El número de serie del volumen es 0A27-1732
+C:.
+|   .env
+|   .gitignore
+|   db.sqlite3
+|   directory_tree.txt
+|   manage.py
+|   Pipfile
+|   Pipfile.lock
+|   Procfile
+|   
++---authentication
+|   |   admin.py
+|   |   apps.py
+|   |   models.py
+|   |   tests.py
+|   |   urls.py
+|   |   utils.py
+|   |   views.py
+|   |   __init__.py
+|   |   
+|   +---migrations
+|   |       __init__.py
+|   |       
+|   \---__pycache__
+|           urls.cpython-312.pyc
+|           utils.cpython-312.pyc
+|           views.cpython-312.pyc
+|           __init__.cpython-312.pyc
+|           
++---expenses
+|   |   admin.py
+|   |   apps.py
+|   |   models.py
+|   |   tests.py
+|   |   urls.py
+|   |   views.py
+|   |   __init__.py
+|   |   
+|   +---migrations
+|   \---__pycache__
+|           admin.cpython-312.pyc
+|           apps.cpython-312.pyc
+|           models.cpython-312.pyc
+|           urls.cpython-312.pyc
+|           views.cpython-312.pyc
+|           __init__.cpython-312.pyc
+|           
++---financeproject
+|   |   asgi.py
+|   |   settings.py
+|   |   urls.py
+|   |   wsgi.py
+|   |   __init__.py
+|   |   
+|   +---static
+|   |   +---css
+|   |   |       bootstrap.min.css
+|   |   |       dashboard.css
+|   |   |       main.css
+|   |   |       
+|   |   +---img
+|   |   \---js
+|   |           main.js
+|   |           register.js
+|   |           
+|   \---__pycache__
+|           settings.cpython-312.pyc
+|           urls.cpython-312.pyc
+|           wsgi.cpython-312.pyc
+|           __init__.cpython-312.pyc
+|           
++---staticfiles
+\---templates
+    |   base.html
+    |   base_auth.html
+    |   index.html
+    |   
+    +---authentication
+    |       login.html
+    |       register.html
+    |       reset-password.html
+    |       set-newpassword.html
+    |       
+    +---expenses
+    |       add_expense.html
+    |       index.html
+    |       
+    \---partials
+            _messages.html
+            _sidebar.html
+            
