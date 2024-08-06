@@ -1,6 +1,68 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block content %}
-<h1> Add Expense </h2>    
+
+<div class="container mt-4">
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb"> 
+        <li class="breadcrumb-item"><a href="{% url 'expenses' %}">Expenses</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Add Expenses</li>
+        </ol>
+    </nav>
+
+    
+    {% include 'partials/_messages.html' %}
+    <div class="card">
+        <div class="card-body">
+            <form action="{% url 'add-expenses' %}" method="post">
+                
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="">Date</label>
+                    <input type="date" class="form-control form-control-sm" id="date" name="date" value="{{values.date}}">
+                </div>
+                <div class="form-group">
+                    <label for="">Description</label>
+                    <input type="text" class="form-control form-control-sm" name="description" value="{{values.description}}">
+                </div>
+                <div class="form-group">
+                    <label for="">Category</label>
+                    <select class="form-control" name"category" value="{{values.category}}">
+                        <option value="">--- Select Category ---</option> 
+                        {%for category in categories %}
+                            
+                            <option name="category" value="{{category.name}}">{{category.name}}</option>
+
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="">Account</label>
+                    <select class="form-control" name"account" value="{{values.account}}">
+                        <option value="">--- Select Account ---</option> 
+                        {%for account in accounts %}
+                            
+                            <option name="account" value="{{account.name}}">{{account.name}}</option>
+
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="">Amount</label>
+                    <input type="number" class="form-control form-control-sm" name="amount", value="{{values.amount}}">
+                </div>
+                <input type="submit" value="Submit" class"btn btn-primary btn-primary-sm">
+            </form>
+        </div>
+    
+    </div>
+
+</div>
+
+<script src="{% static 'js/add_expense.js' %}"></script>
+
 {% endblock %}
 
