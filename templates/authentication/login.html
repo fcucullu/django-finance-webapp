@@ -1,4 +1,6 @@
-{% extends "base_auth.html" %} {% load static %} {% block content %}
+{% extends "base_auth.html" %}
+{% load static %}
+{% block content %}
 
 <!-- Full-width container -->
 <div class="container-fluid p-0">
@@ -11,8 +13,10 @@
           </div>
 
           <form action="{% url 'login' %}" method="post">
-            {% csrf_token %} 
+            {% csrf_token %}
             {% include "partials/_messages.html" %}
+            <input type="hidden" name="next" value="{{ next }}"> <!-- Hidden field for redirect -->
+
             <div class="form-group">
               <input
                 type="text"
@@ -20,7 +24,7 @@
                 placeholder="Username"
                 id="usernameField"
                 class="form-control form-control-sm"
-                value="{{fieldValues.username}}"
+                value="{{ fieldValues.username }}"
               />
             </div>
 

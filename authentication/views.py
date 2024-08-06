@@ -112,13 +112,22 @@ class VerificationView(View):
 
         return redirect('login')
     
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth.models import User
+from django.views import View
+
 class LoginView(View):
     def get(self, request):
-        return render(request, 'authentication/login.html')  # Render the login page template
-    
+        # Get the 'next' parameter from the URL, default to '/' if not provided
+        next_url = request.GET.get('next', '/')
+        return render(request, 'authentication/login.html', {'next': next_url})
+
     def post(self, request):
         username = request.POST.get('username')
         password = request.POST.get('password')
+        next_url = request.POST.get('next', '/')  # Get the 'next' parameter from the form
 
         if username and password:
             try:
@@ -128,21 +137,21 @@ class LoginView(View):
 
             if user:
                 if user.is_active:
-                    user = auth.authenticate(username=username, password=password)
+                    user = authenticate(username=username, password=password)
                     if user:
-                        auth.login(request, user)
-                        messages.success(request, f'Welcome, {user.username}!\nYou are now logged in')
-                        return redirect('expenses')  # Redirect to a homepage or dashboard after login
+                        auth_login(request, user)
+                        messages.success(request, f'Welcome, {user.username}! You are now logged in.')
+                        return redirect(next_url)  # Redirect to the 'next' URL
                     else:
-                        messages.error(request, 'Invalid credentials, please try again')
+                        messages.error(request, 'Invalid credentials, please try again.')
                 else:
-                    messages.error(request, 'Your account is not active. Please check your email')
+                    messages.error(request, 'Your account is not active. Please check your email.')
             else:
-                messages.error(request, 'Invalid credentials, please try again')
+                messages.error(request, 'Invalid credentials, please try again.')
         else:
-            messages.error(request, 'Please fill all fields')
+            messages.error(request, 'Please fill all fields.')
 
-        return render(request, 'authentication/login.html')  # Render the login page with errors
+        return render(request, 'authentication/login.html', {'next': next_url})  # Pass 'next' back to the template
     
 class LogoutView(View):
     def post(self, request):
