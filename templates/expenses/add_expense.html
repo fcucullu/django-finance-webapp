@@ -5,64 +5,55 @@
 {% block content %}
 
 <div class="container mt-4">
-
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb"> 
-        <li class="breadcrumb-item"><a href="{% url 'expenses' %}">Expenses</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Add Expenses</li>
+            <li class="breadcrumb-item"><a href="{% url 'expenses' %}">Expenses</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Add Expenses</li>
         </ol>
     </nav>
 
-    
     {% include 'partials/_messages.html' %}
+
     <div class="card">
         <div class="card-body">
             <form action="{% url 'add-expenses' %}" method="post">
-                
                 {% csrf_token %}
                 <div class="form-group">
-                    <label for="">Date</label>
-                    <input type="date" class="form-control form-control-sm" id="date" name="date" value="{{values.date}}">
+                    <label for="date">Date</label>
+                    <input type="date" class="form-control form-control-sm" id="date" name="date" value="{{ values.date|default:'' }}">
                 </div>
                 <div class="form-group">
-                    <label for="">Description</label>
-                    <input type="text" class="form-control form-control-sm" name="description" value="{{values.description}}">
+                    <label for="description">Description</label>
+                    <input type="text" class="form-control form-control-sm" id="description" name="description" value="{{ values.description|default:'' }}">
                 </div>
                 <div class="form-group">
-                    <label for="">Category</label>
-                    <select class="form-control" name"category" value="{{values.category}}">
+                    <label for="category">Category</label>
+                    <select class="form-control" id="category" name="category">
                         <option value="">--- Select Category ---</option> 
-                        {%for category in categories %}
-                            
-                            <option name="category" value="{{category.name}}">{{category.name}}</option>
-
+                        {% for category in categories %}
+                            <option value="{{ category.name }}" {% if category.name == values.category %}selected{% endif %}>{{ category.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="">Account</label>
-                    <select class="form-control" name"account" value="{{values.account}}">
+                    <label for="account">Account</label>
+                    <select class="form-control" id="account" name="account">
                         <option value="">--- Select Account ---</option> 
-                        {%for account in accounts %}
-                            
-                            <option name="account" value="{{account.name}}">{{account.name}}</option>
-
+                        {% for account in accounts %}
+                            <option value="{{ account.name }}" {% if account.name == values.account %}selected{% endif %}>{{ account.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="">Amount</label>
-                    <input type="number" class="form-control form-control-sm" name="amount", value="{{values.amount}}">
+                    <label for="amount">Amount</label>
+                    <input type="floatformat" class="form-control form-control-sm" id="amount" name="amount" value="{{ values.amount|floatformat:2 }}">
                 </div>
-                <input type="submit" value="Submit" class"btn btn-primary btn-primary-sm">
+                <input type="submit" value="Submit" class="btn btn-primary btn-primary-sm">
             </form>
         </div>
-    
     </div>
-
 </div>
 
 <script src="{% static 'js/add_expense.js' %}"></script>
 
 {% endblock %}
-
