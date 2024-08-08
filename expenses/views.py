@@ -39,7 +39,12 @@ def add_expense(request):
         date = request.POST.get('date', '')
         description = request.POST.get('description', '')
         amount = request.POST.get('amount', '').replace(',','.')
-        amount_decimal = Decimal(amount).quantize(Decimal('0.01'))
+        try:
+            amount_decimal = Decimal(amount).quantize(Decimal('0.01'))
+        except:
+            messages.error(request, 'Amount is invalid')
+            return render(request, 'expenses/add_expense.html', context)
+
         category = request.POST.get('category', '')
         account = request.POST.get('account', '')
 
@@ -63,3 +68,58 @@ def add_expense(request):
 
         messages.success(request, 'Expense added successfully')
         return redirect('expenses')
+    
+
+def edit_expense(request, id):
+    expense=Expense.objects.get(pk=id)
+    categories = Category.objects.all()
+    accounts = Account.objects.all()
+    context = {
+        'expense': expense,
+        'categories': categories,
+        'accounts': accounts,
+        'values': expense,
+    }
+    
+    if request.method == 'GET':
+        return render(request, 'expenses/edit_expense.html', context)
+    
+    if request.method == 'POST':
+        date = request.POST.get('date', '')
+        description = request.POST.get('description', '')
+        amount = request.POST.get('amount', '').replace(',','.')
+        try:
+            amount_decimal = Decimal(amount).quantize(Decimal('0.01'))
+        except:
+            messages.error(request, 'Amount is invalid')
+            return render(request, 'expenses/edit_expense.html', context)
+
+        category = request.POST.get('category', '')
+        account = request.POST.get('account', '')
+
+        is_invalid_input = not all([date, description, amount, category, account])
+        is_invalid_category = category == "--- Select Category ---"
+        is_invalid_account = account == "--- Select Account ---"
+        conditions = is_invalid_input or is_invalid_category or is_invalid_account
+
+        if conditions:
+            messages.error(request, 'All fields are mandatory')
+            return render(request, 'expenses/edit_expense.html', context)
+
+        expense.owner=request.user
+        expense.date=date
+        expense.description=description
+        expense.amount=amount_decimal
+        expense.category=category
+        expense.account=account
+        expense.save()
+
+        messages.success(request, 'Expense updated successfully')
+        return redirect('expenses')
+    
+
+def delete_expense(request, id):
+    expense = Expense.objects.get(pk=id)
+    expense.delete()
+    messages.success(request, 'Expense deleted successfully')
+    return redirect('expenses')

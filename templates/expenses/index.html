@@ -8,7 +8,7 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item">
-            <a href="">Expenses</a>
+            <a href="{% url 'expenses' %}">Expenses</a>
           </li>
           <li class="breadcrumb-item active" aria-current="page">
             My Expenses
@@ -33,6 +33,7 @@
           <th>Category</th>
           <th>Account</th>
           <th>Amount (CURRENCY)</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -44,6 +45,10 @@
           <td>{{expense.category}}</td>
           <td>{{expense.account}}</td>
           <td class="amount-cell">{{expense.amount}}</td>
+          <td><a href="{% url 'edit-expense' expense.id %}" class="btn btn-secondary btn-sm">Edit</a>
+            
+          </td>
+            
         </tr>
         {% endfor %}
       </tbody>

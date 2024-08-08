@@ -3,51 +3,41 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Finance WebApp {% block title %}      
-    {% endblock %}    </title>
+    <title>Finance WebApp {% block title %}{% endblock %}</title>
+    
     <!-- Bootstrap core CSS -->
-<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
-<link href="{% static 'css/main.css' %}" rel="stylesheet">
-
-    <!-- Custom styles for this template -->
-    <link href={% static "css/dashboard.css" %} rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/main.css' %}" rel="stylesheet">
+    <link href="{% static 'css/dashboard.css' %}" rel="stylesheet">
   </head>
   <body>
     <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
-  <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Finance WebApp</a>
-  <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
-  <ul class="navbar-nav px-3">
-    <li class="nav-item text-nowrap">
-      <form action="{% url 'logout' %}" method="POST">
-        {% csrf_token %}
-        <input class="text text-capitalize" type="submit" value="Sign out" />
-      </form>
-    </li>
-  </ul>
-</nav>
+      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Finance WebApp</a>
+      <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
+      <ul class="navbar-nav px-3">
+        <li class="nav-item text-nowrap">
+          <form action="{% url 'logout' %}" method="POST">
+            {% csrf_token %}
+            <input class="text text-capitalize" type="submit" value="Sign out" />
+          </form>
+        </li>
+      </ul>
+    </nav>
 
-<div class="container-fluid">
-  <div class="row">
-    {% include "partials/_sidebar.html" %}
+    <div class="container-fluid">
+      <div class="row">
+        {% include "partials/_sidebar.html" %}
+        <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+          {% block content %}{% endblock %}
+        </main>
+      </div>
+    </div>
 
-    <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
-     {% block content %}
-         
-     {% endblock %}
-    </main>
-  </div>
-</div>
-<script
-  src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-  integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
-  crossorigin="anonymous"
-></script>
-<script>
-  window.jQuery ||
-  document.write(
-    '<script src="/docs/4.4/static/js/vendor/jquery.slim.min.js"><\/script>'
-    );
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.9.0/feather.min.js"></script>
-<script src="{% static 'js/main.js' %}"></script>
+    <!-- jQuery first, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5+z0PTI7A2Y8PbMtJOny3oXZr8CEK2p1VfI2PxLQJ" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5+z0PTI7A2Y8PbMtJOny3oXZr8CEK2p1VfI2PxLQJ" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script src="{% static 'js/main.js' %}"></script>
+  </body>
 </html>

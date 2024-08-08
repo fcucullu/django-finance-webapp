@@ -49,6 +49,7 @@
                     <input type="floatformat" class="form-control form-control-sm" id="amount" name="amount" value="{{ values.amount|floatformat:2 }}">
                 </div>
                 <input type="submit" value="Submit" class="btn btn-primary btn-primary-sm">
+                <a href="{% url 'expenses' %}" class="btn btn-secondary">Cancel</a>
             </form>
         </div>
     </div>
