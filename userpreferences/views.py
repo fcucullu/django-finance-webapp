@@ -24,13 +24,15 @@ def index(request):
         currency = request.POST.get('currency')
         if currency:
             user_preferences.currency = currency
+            user_preferences.currency_code = user_preferences.currency.split(' - ')[0] if user_preferences.currency else ''
             user_preferences.save()
             messages.success(request, 'Changes saved')
-            return redirect('preferences')
+            return redirect('general-preferences')
         else:
             messages.error(request, 'Please select a currency')
 
-    return render(request, 'preferences/index.html', {
+
+    return render(request, 'preferences/general-preferences.html', {
         'currencies': currency_data,
-        'user_preferences': user_preferences
+        'user_preferences': user_preferences,
     })

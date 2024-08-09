@@ -2,5 +2,5 @@ from . import views
 from django.urls import path
 
 urlpatterns = [
-    path('', views.index, name="preferences")
+    path('general-preferences', views.index, name="general-preferences")
 ]

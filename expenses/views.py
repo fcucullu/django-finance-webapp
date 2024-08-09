@@ -2,8 +2,11 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
 from .models import Expense, Category, Account
+from userpreferences.models import UserPreferences
 from django.contrib import messages
 from decimal import Decimal
+from django.core.paginator import Paginator
+
 
 @login_required(login_url='/authentication/login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -12,12 +15,20 @@ def index(request):
     accounts = Account.objects.all()
     #expenses = Expense.objects.filter(owner=request.user) If I want to filter expenses only by owner (case of a public app)
     expenses = Expense.objects.all()
+    userpreferences = UserPreferences.objects.get(user=request.user)
+    
+    paginator = Paginator(expenses, 40)
+    page_number = request.GET.get('page')
+    page_obj = Paginator.get_page(paginator, page_number)
+    
     context = {
         'categories': categories,
         'accounts': accounts,
-        'expenses': expenses
+        'expenses': expenses,
+        'userpreferences': userpreferences,
+        'page_obj': page_obj,
     }
-    return render(request, 'expenses/index.html', context)
+    return render(request, 'expenses/expenses.html', context)
 
 
 

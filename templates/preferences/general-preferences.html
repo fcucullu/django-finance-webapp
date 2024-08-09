@@ -3,7 +3,7 @@
 <div class="container mt-3">
   <h5>Preferred Currency</h5>
 
-  <form action="{% url 'preferences' %}" method="post">
+  <form action="{% url 'general-preferences' %}" method="post">
     {% csrf_token %}
     <div class="input-group">
       <select name="currency" class="custom-select" id="inputGroupSelect04">
@@ -18,7 +18,7 @@
         {% endfor %}
       </select>
       <div class="input-group-append">
-        <button class="btn btn-outline-secondary" type="submit">Save</button>
+        <button class="btn btn-primary" type="submit">Save</button>
       </div>
     </div>
   </form>

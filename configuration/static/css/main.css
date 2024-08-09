@@ -66,3 +66,12 @@
   padding-right: 10px; /* Add some padding to the right */
   font-feature-settings: "tnum"; /* Enable tabular numbers for better alignment */
 }
+
+.pagination .page-item.active .page-link {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.pagination .page-link {
+  color: #007bff;
+}
