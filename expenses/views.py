@@ -6,17 +6,21 @@ from userpreferences.models import UserPreferences
 from django.contrib import messages
 from decimal import Decimal
 from django.core.paginator import Paginator
-
+import json
+from configuration.settings import FILTER_BY_OWNER
 
 @login_required(login_url='/authentication/login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def index(request):
     categories = Category.objects.all()
     accounts = Account.objects.all()
-    #expenses = Expense.objects.filter(owner=request.user) If I want to filter expenses only by owner (case of a public app)
-    expenses = Expense.objects.all()
     userpreferences = UserPreferences.objects.get(user=request.user)
     
+    if FILTER_BY_OWNER:
+        expenses = Expense.objects.filter(owner=request.user)
+    else:
+        expenses = Expense.objects.all()
+
     paginator = Paginator(expenses, 40)
     page_number = request.GET.get('page')
     page_obj = Paginator.get_page(paginator, page_number)
@@ -134,3 +138,9 @@ def delete_expense(request, id):
     expense.delete()
     messages.success(request, 'Expense deleted successfully')
     return redirect('expenses')
+
+def search_expenses(request):
+    if request.method == 'POST':
+        search_str = json.loads(request.body).get('searchText')
+
+        expenses = Expense.objects.filfer
