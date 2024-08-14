@@ -6,7 +6,11 @@ from userpreferences.models import UserPreferences
 from django.contrib import messages
 from decimal import Decimal
 from django.core.paginator import Paginator
+from django.views.decorators.csrf import csrf_exempt
 import json
+from django.http import JsonResponse
+from django.db.models import Q
+
 from configuration.settings import FILTER_BY_OWNER
 
 @login_required(login_url='/authentication/login')
@@ -16,10 +20,8 @@ def index(request):
     accounts = Account.objects.all()
     userpreferences = UserPreferences.objects.get(user=request.user)
     
-    if FILTER_BY_OWNER:
-        expenses = Expense.objects.filter(owner=request.user)
-    else:
-        expenses = Expense.objects.all()
+    # Determine the base queryset depending on ownership filter
+    expenses = Expense.objects.filter(owner=request.user) if FILTER_BY_OWNER else Expense.objects.all()
 
     paginator = Paginator(expenses, 40)
     page_number = request.GET.get('page')
@@ -132,15 +134,27 @@ def edit_expense(request, id):
         messages.success(request, 'Expense updated successfully')
         return redirect('expenses')
     
-
+@csrf_exempt
 def delete_expense(request, id):
     expense = Expense.objects.get(pk=id)
     expense.delete()
     messages.success(request, 'Expense deleted successfully')
     return redirect('expenses')
 
+@csrf_exempt
 def search_expenses(request):
     if request.method == 'POST':
-        search_str = json.loads(request.body).get('searchText')
+        search_str = json.loads(request.body).get('searchText', '')
 
-        expenses = Expense.objects.filfer
+        # Determine the base queryset depending on ownership filter
+        expenses = Expense.objects.filter(owner=request.user) if FILTER_BY_OWNER else Expense.objects.all()
+
+        # Apply filtering across multiple fields using Q objects
+        expenses_filtered = expenses.filter(
+            Q(amount__icontains=search_str) |
+            Q(description__icontains=search_str) |
+            Q(category__icontains=search_str) |
+            Q(account__icontains=search_str)
+        )
+
+        return JsonResponse({'expenses': list(expenses_filtered.values())})
