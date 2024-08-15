@@ -20,12 +20,23 @@ def index(request):
     accounts = Account.objects.all()
     userpreferences = UserPreferences.objects.get(user=request.user)
     
+    search_text = request.GET.get('search', '')  # Capture searchText from query parameters
+
     # Determine the base queryset depending on ownership filter
     expenses = Expense.objects.filter(owner=request.user) if FILTER_BY_OWNER else Expense.objects.all()
 
-    paginator = Paginator(expenses, 40)
-    page_number = request.GET.get('page')
-    page_obj = Paginator.get_page(paginator, page_number)
+    # Apply filtering if searchText is present
+    if search_text:
+        expenses = expenses.filter(
+            Q(amount__icontains=search_text) |
+            Q(description__icontains=search_text) |
+            Q(category__icontains=search_text) |
+            Q(account__icontains=search_text)
+        )
+
+    paginator = Paginator(expenses, 2)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
     
     context = {
         'categories': categories,
@@ -33,6 +44,7 @@ def index(request):
         'expenses': expenses,
         'userpreferences': userpreferences,
         'page_obj': page_obj,
+        'search_text': search_text
     }
     return render(request, 'expenses/expenses.html', context)
 
@@ -157,4 +169,17 @@ def search_expenses(request):
             Q(account__icontains=search_str)
         )
 
-        return JsonResponse({'expenses': list(expenses_filtered.values())})
+        expenses_list = [
+            {
+                'id': expense.id,
+                'owner': expense.owner.username,  
+                'date': expense.date.strftime('%Y-%m-%d'),
+                'description': expense.description,
+                'category': expense.category,
+                'account': expense.account,
+                'amount': str(expense.amount),
+            }
+            for expense in expenses_filtered
+        ]
+
+        return JsonResponse({'expenses': expenses_list, 'searchText': search_str})

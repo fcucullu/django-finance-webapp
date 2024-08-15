@@ -23,12 +23,10 @@
     </div>
   </div>
 
-  <!-- TABLE -->
+  <!-- TABLE TEMPLATE (Shared by Both Default and Output Tables) -->
   <div class="container">
     {% if expenses.count %}
-    
-    <div class="table-default">
-
+    <div class="table-container">
       <table class="table table-stripped table-hover">
         <thead>
           <tr>
@@ -43,7 +41,9 @@
             <th></th>
           </tr>
         </thead>
-        <tbody>
+        
+        <!-- DEFAULT TABLE BODY -->
+        <tbody class="table-default-body">
           {% for expense in page_obj %}
           <tr>
             <td>{{ expense.owner }}</td>
@@ -73,35 +73,15 @@
           </tr>
           {% endfor %}
         </tbody>
-      </table>
 
-    </div>
-
-
-    <div class="table-output">
-
-      <table class="table table-stripped table-hover">
-        <thead>
-          <tr>
-            <th>User</th>
-            <th>Date</th>
-            <th>Description</th>
-            <th>Category</th>
-            <th>Account</th>
-            <th class="text-right">
-              Amount ({{ userpreferences.currency_code }})
-            </th>
-            <th></th>
-          </tr>
-        </thead>
+        <!-- DEFAULT TABLE BODY -->
         <tbody class="table-output-body">
              
-
-
         </tbody>
       </table>
 
     </div>
+
 
     <!-- PAGINATION -->
     <div class="pagination-container">
@@ -113,7 +93,7 @@
           <ul class="pagination">
             {% if page_obj.has_previous %}
               <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search_text }}" aria-label="Previous">
                   <span aria-hidden="true">&laquo;</span>
                   <span class="sr-only">Previous</span>
                 </a>
@@ -125,21 +105,21 @@
                 <!-- On the first page -->
                 {% if num <= 3 %}
                   <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    <a class="page-link" href="?page={{ num }}&search={{ search_text }}">{{ num }}</a>
                   </li>
                 {% endif %}
               {% elif page_obj.number == page_obj.paginator.num_pages %}
                 <!-- On the last page -->
                 {% if num >= page_obj.paginator.num_pages|add:"-2" %}
                   <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    <a class="page-link" href="?page={{ num }}&search={{ search_text }}">{{ num }}</a>
                   </li>
                 {% endif %}
               {% else %}
                 <!-- Somewhere in the middle -->
                 {% if num == page_obj.number or num == page_obj.number|add:"-1" or num == page_obj.number|add:"1" %}
                   <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    <a class="page-link" href="?page={{ num }}&search={{ search_text }}">{{ num }}</a>
                   </li>
                 {% endif %}
               {% endif %}
@@ -149,7 +129,7 @@
             <li class="page-item">
               <a
                 class="page-link"
-                href="?page={{ page_obj.next_page_number }}"
+                href="?page={{ page_obj.next_page_number }}&search={{ search_text }}"
                 aria-label="Next"
               >
                 <span aria-hidden="true">&raquo;</span>

@@ -75,3 +75,17 @@
 .pagination .page-link {
   color: #007bff;
 }
+
+
+.hidden {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  left: -9999px;
+}
+
+.visible {
+  visibility: visible;
+  opacity: 1;
+  position: static;
+}
