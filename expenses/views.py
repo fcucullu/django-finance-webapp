@@ -12,6 +12,7 @@ from django.http import JsonResponse
 from django.db.models import Q
 
 from configuration.settings import FILTER_BY_OWNER
+from configuration.settings import ROWS_PER_PAGE
 
 @login_required(login_url='/authentication/login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -34,7 +35,7 @@ def index(request):
             Q(account__icontains=search_text)
         )
 
-    paginator = Paginator(expenses, 2)
+    paginator = Paginator(expenses, ROWS_PER_PAGE)
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
     
@@ -47,8 +48,6 @@ def index(request):
         'search_text': search_text
     }
     return render(request, 'expenses/expenses.html', context)
-
-
 
 @login_required(login_url='/authentication/login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -153,33 +152,3 @@ def delete_expense(request, id):
     messages.success(request, 'Expense deleted successfully')
     return redirect('expenses')
 
-@csrf_exempt
-def search_expenses(request):
-    if request.method == 'POST':
-        search_str = json.loads(request.body).get('searchText', '')
-
-        # Determine the base queryset depending on ownership filter
-        expenses = Expense.objects.filter(owner=request.user) if FILTER_BY_OWNER else Expense.objects.all()
-
-        # Apply filtering across multiple fields using Q objects
-        expenses_filtered = expenses.filter(
-            Q(amount__icontains=search_str) |
-            Q(description__icontains=search_str) |
-            Q(category__icontains=search_str) |
-            Q(account__icontains=search_str)
-        )
-
-        expenses_list = [
-            {
-                'id': expense.id,
-                'owner': expense.owner.username,  
-                'date': expense.date.strftime('%Y-%m-%d'),
-                'description': expense.description,
-                'category': expense.category,
-                'account': expense.account,
-                'amount': str(expense.amount),
-            }
-            for expense in expenses_filtered
-        ]
-
-        return JsonResponse({'expenses': expenses_list, 'searchText': search_str})
