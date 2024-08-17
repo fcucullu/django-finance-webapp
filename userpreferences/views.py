@@ -9,7 +9,10 @@ from django.views.decorators.cache import cache_control
 
 @login_required(login_url='/authentication/login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
-def index(request):
+def general_preferences(request):
+    user_preferences, created = UserPreferences.objects.get_or_create(user=request.user)
+    
+    #Currency configuration
     currency_data = []
     file_path = os.path.join(settings.BASE_DIR, 'currencies.json')
 
@@ -18,13 +21,16 @@ def index(request):
         for k, v in data.items():
             currency_data.append({'name': k, 'value': v})
 
-    user_preferences, created = UserPreferences.objects.get_or_create(user=request.user)
+    #Rows_per_page configuration
+    rows_per_page_data = [10, 25, 50, 100]  
 
     if request.method == "POST":
         currency = request.POST.get('currency')
+        rows_per_page = int(request.POST.get('rows_per_page', 25))
         if currency:
             user_preferences.currency = currency
             user_preferences.currency_code = user_preferences.currency.split(' - ')[0] if user_preferences.currency else ''
+            user_preferences.rows_per_page = rows_per_page
             user_preferences.save()
             messages.success(request, 'Changes saved')
             return redirect('general-preferences')
@@ -35,4 +41,5 @@ def index(request):
     return render(request, 'preferences/general-preferences.html', {
         'currencies': currency_data,
         'user_preferences': user_preferences,
+        'rows_per_page_data': rows_per_page_data,
     })

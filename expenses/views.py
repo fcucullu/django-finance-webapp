@@ -19,8 +19,8 @@ from configuration.settings import ROWS_PER_PAGE
 def index(request):
     categories = Category.objects.all()
     accounts = Account.objects.all()
-    userpreferences = UserPreferences.objects.get(user=request.user)
-    
+    user_preferences = UserPreferences.objects.get(user=request.user)
+    print(user_preferences)
     search_text = request.GET.get('search', '')  # Capture searchText from query parameters
 
     # Determine the base queryset depending on ownership filter
@@ -35,7 +35,7 @@ def index(request):
             Q(account__icontains=search_text)
         )
 
-    paginator = Paginator(expenses, ROWS_PER_PAGE)
+    paginator = Paginator(expenses, user_preferences.rows_per_page)
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
     
@@ -43,7 +43,7 @@ def index(request):
         'categories': categories,
         'accounts': accounts,
         'expenses': expenses,
-        'userpreferences': userpreferences,
+        'user_preferences': user_preferences,
         'page_obj': page_obj,
         'search_text': search_text
     }

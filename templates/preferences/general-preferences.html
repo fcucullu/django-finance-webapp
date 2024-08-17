@@ -22,5 +22,33 @@
       </div>
     </div>
   </form>
+
+  <h5>Rows per page</h5>
+
+  <form action="{% url 'general-preferences' %}" method="post">
+    {% csrf_token %}
+    <div class="input-group">
+      <select name="rows_per_page" class="custom-select" id="inputGroupSelect04">
+        {% if user_preferences.rows_per_page %}
+        <option selected value="{{ user_preferences.rows_per_page }}">
+          {{ user_preferences.rows_per_page }}
+        </option>
+        {% endif %} {% for rows_per_page in rows_per_page_data %}
+        <option value="{{ rows_per_page }}">
+          {{ rows_per_page }}
+        </option>
+        {% endfor %}
+      </select>
+      <div class="input-group-append">
+        <button class="btn btn-primary" type="submit">Save</button>
+      </div>
+    </div>
+  </form>
+
+
+
+
+
+
 </div>
 {% endblock %}

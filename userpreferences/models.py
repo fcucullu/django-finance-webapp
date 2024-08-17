@@ -8,6 +8,7 @@ class UserPreferences(models.Model):
     #Here add all the user preferences needed
     currency = models.CharField(max_length=255, blank=True, null=True)
     currency_code = models.CharField(max_length=255, blank=True, null=True)
+    rows_per_page = models.IntegerField(default=25)
 
     def __str__(self):
         return f"{self.user.username}'s preferences" 
