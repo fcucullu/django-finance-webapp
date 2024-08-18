@@ -1,54 +1,53 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %} {% block content %} 
 {% include "partials/_messages.html" %}
 <div class="container mt-3">
-  <h5>Preferred Currency</h5>
-
   <form action="{% url 'general-preferences' %}" method="post">
     {% csrf_token %}
-    <div class="input-group">
-      <select name="currency" class="custom-select" id="inputGroupSelect04">
-        {% if user_preferences.currency %}
-        <option selected value="{{ user_preferences.currency }}">
-          {{ user_preferences.currency }}
-        </option>
-        {% endif %} {% for currency in currencies %}
-        <option value="{{ currency.name }} - {{ currency.value }}">
-          {{ currency.name }} - {{ currency.value }}
-        </option>
-        {% endfor %}
-      </select>
-      <div class="input-group-append">
-        <button class="btn btn-primary" type="submit">Save</button>
+
+    <div class="spaced-div">
+      <h5>Preferred Currency</h5>
+      <div class="input-group">
+        <select name="currency" class="custom-select" id="inputGroupSelect04">
+          {% if user_preferences.currency %}
+          <option selected value="{{ user_preferences.currency }}">
+            {{ user_preferences.currency }}
+          </option>
+          {% endif %}
+          
+          {% for currency in currencies %}
+            {% if user_preferences.currency_code != currency.name %}
+              <option value="{{ currency.name }} - {{ currency.value }}">
+                {{ currency.name }} - {{ currency.value }}
+              </option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+    </div> 
+
+    <div class="spaced-div mt-4">
+      <h5>Rows per page</h5>
+      <div class="input-group">
+        <select name="rows_per_page" class="custom-select" id="inputGroupSelect04">
+          {% if user_preferences.rows_per_page %}
+          <option selected value="{{ user_preferences.rows_per_page }}">
+            {{ user_preferences.rows_per_page }}
+          </option>
+          {% endif %}
+          
+          {% for rows_per_page in rows_per_page_data %}
+            {% if rows_per_page != user_preferences.rows_per_page %}
+              <option value="{{ rows_per_page }}">{{ rows_per_page }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
       </div>
     </div>
-  </form>
 
-  <h5>Rows per page</h5>
-
-  <form action="{% url 'general-preferences' %}" method="post">
-    {% csrf_token %}
-    <div class="input-group">
-      <select name="rows_per_page" class="custom-select" id="inputGroupSelect04">
-        {% if user_preferences.rows_per_page %}
-        <option selected value="{{ user_preferences.rows_per_page }}">
-          {{ user_preferences.rows_per_page }}
-        </option>
-        {% endif %} {% for rows_per_page in rows_per_page_data %}
-        <option value="{{ rows_per_page }}">
-          {{ rows_per_page }}
-        </option>
-        {% endfor %}
-      </select>
-      <div class="input-group-append">
-        <button class="btn btn-primary" type="submit">Save</button>
-      </div>
+    <div class="text-center mt-4">
+      <button class="btn btn-primary" type="submit">Save</button>
     </div>
   </form>
-
-
-
-
-
-
 </div>
+
 {% endblock %}

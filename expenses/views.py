@@ -20,7 +20,6 @@ def index(request):
     categories = Category.objects.all()
     accounts = Account.objects.all()
     user_preferences = UserPreferences.objects.get(user=request.user)
-    print(user_preferences)
     search_text = request.GET.get('search', '')  # Capture searchText from query parameters
 
     # Determine the base queryset depending on ownership filter
@@ -34,6 +33,8 @@ def index(request):
             Q(category__icontains=search_text) |
             Q(account__icontains=search_text)
         )
+
+    expenses = expenses.order_by('-date')
 
     paginator = Paginator(expenses, user_preferences.rows_per_page)
     page_number = request.GET.get('page', 1)

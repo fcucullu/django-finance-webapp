@@ -61,12 +61,16 @@
   transform: scale(1.2);
 }
 
+
+/* Amount styling */ 
 .amount-cell {
   text-align: right; /* Align text to the right */
   padding-right: 10px; /* Add some padding to the right */
   font-feature-settings: "tnum"; /* Enable tabular numbers for better alignment */
 }
 
+
+/* Pagination styling */
 .pagination .page-item.active .page-link {
   background-color: #007bff;
   border-color: #007bff;
@@ -76,7 +80,7 @@
   color: #007bff;
 }
 
-
+/* Tables styling to hide/show */
 .hidden {
   visibility: hidden;
   opacity: 0;
@@ -88,4 +92,9 @@
   visibility: visible;
   opacity: 1;
   position: static;
+}
+
+/* Create space between divs */
+.spaced-div {
+  margin-bottom: 20px;
 }

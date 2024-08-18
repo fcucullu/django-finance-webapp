@@ -25,8 +25,8 @@ def general_preferences(request):
     rows_per_page_data = [10, 25, 50, 100]  
 
     if request.method == "POST":
-        currency = request.POST.get('currency')
-        rows_per_page = int(request.POST.get('rows_per_page', 25))
+        currency = request.POST.get('currency', user_preferences.currency)
+        rows_per_page = int(request.POST.get('rows_per_page', user_preferences.rows_per_page))
         if currency:
             user_preferences.currency = currency
             user_preferences.currency_code = user_preferences.currency.split(' - ')[0] if user_preferences.currency else ''
@@ -35,7 +35,8 @@ def general_preferences(request):
             messages.success(request, 'Changes saved')
             return redirect('general-preferences')
         else:
-            messages.error(request, 'Please select a currency')
+            messages.error(request, 'Error, please try again')
+            # messages.error(request, 'Please select a currency')
 
 
     return render(request, 'preferences/general-preferences.html', {

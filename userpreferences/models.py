@@ -6,8 +6,8 @@ from django.contrib.auth.models import User
 class UserPreferences(models.Model):
     user = models.OneToOneField(to=User, on_delete=models.CASCADE)
     #Here add all the user preferences needed
-    currency = models.CharField(max_length=255, blank=True, null=True)
-    currency_code = models.CharField(max_length=255, blank=True, null=True)
+    currency = models.CharField(default="EUR - Euro")
+    currency_code = models.CharField(default="EUR")
     rows_per_page = models.IntegerField(default=25)
 
     def __str__(self):
