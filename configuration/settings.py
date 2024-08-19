@@ -154,5 +154,3 @@ DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 #If filtering by owner is necessary
 FILTER_BY_OWNER = False
 
-#Quantity of rows per page
-ROWS_PER_PAGE = 20

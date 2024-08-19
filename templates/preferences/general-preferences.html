@@ -1,53 +1,245 @@
-{% extends "base.html" %} {% block content %} 
+{% extends "base.html" %}
+{% block content %} 
 {% include "partials/_messages.html" %}
-<div class="container mt-3">
+{% load static %}
+
+<!-- HEADER -->
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-12">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="{% url 'general-preferences' %}">Settings</a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">
+            General Preferences
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<div class="container mt-2">
+  <!-- Currency Selection -->
   <form action="{% url 'general-preferences' %}" method="post">
     {% csrf_token %}
-
-    <div class="spaced-div">
-      <h5>Preferred Currency</h5>
+    <div class="form-group">
+      <label for="currency" class="bold-text">Preferred Currency</label>
       <div class="input-group">
-        <select name="currency" class="custom-select" id="inputGroupSelect04">
+        <select name="currency" class="custom-select" id="currency">
           {% if user_preferences.currency %}
           <option selected value="{{ user_preferences.currency }}">
             {{ user_preferences.currency }}
           </option>
-          {% endif %}
-          
-          {% for currency in currencies %}
-            {% if user_preferences.currency_code != currency.name %}
-              <option value="{{ currency.name }} - {{ currency.value }}">
-                {{ currency.name }} - {{ currency.value }}
-              </option>
-            {% endif %}
-          {% endfor %}
+          {% endif %} {% for currency in currencies %} 
+          {% if user_preferences.currency_code != currency.name %}
+          <option value="{{ currency.name }} - {{ currency.value }}">
+            {{ currency.name }} - {{ currency.value }}
+          </option>
+          {% endif %} {% endfor %}
         </select>
+        <div class="input-group-append">
+          <button class="btn btn-primary" type="submit">Save</button>
+        </div>
       </div>
-    </div> 
+    </div>
+  </form>
 
-    <div class="spaced-div mt-4">
-      <h5>Rows per page</h5>
+  <!-- Rows per Page -->
+  <form action="{% url 'general-preferences' %}" method="post">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="rows_per_page" class="bold-text">Rows per page</label>
       <div class="input-group">
-        <select name="rows_per_page" class="custom-select" id="inputGroupSelect04">
+        <select name="rows_per_page" class="custom-select" id="rows_per_page">
           {% if user_preferences.rows_per_page %}
           <option selected value="{{ user_preferences.rows_per_page }}">
             {{ user_preferences.rows_per_page }}
           </option>
-          {% endif %}
-          
-          {% for rows_per_page in rows_per_page_data %}
-            {% if rows_per_page != user_preferences.rows_per_page %}
-              <option value="{{ rows_per_page }}">{{ rows_per_page }}</option>
-            {% endif %}
-          {% endfor %}
+          {% endif %} {% for rows_per_page in rows_per_page_data %} 
+          {% if rows_per_page != user_preferences.rows_per_page %}
+          <option value="{{ rows_per_page }}">{{ rows_per_page }}</option>
+          {% endif %} {% endfor %}
         </select>
+        <div class="input-group-append">
+          <button class="btn btn-primary" type="submit">Save</button>
+        </div>
       </div>
     </div>
-
-    <div class="text-center mt-4">
-      <button class="btn btn-primary" type="submit">Save</button>
-    </div>
   </form>
+
+  <!-- Manage Income Categories -->
+  <div class="form-group">
+    <label class="bold-text">Manage Income Categories</label>
+    <table class="table table-sm table-striped table-hover">
+      <thead></thead>
+      <tbody id="categories-incomes-list">
+        {% for category in user_preferences.categories_incomes %}
+        <tr>
+          <td>{{ category }}</td>
+          <td class="text-right">
+            <button
+              type="button"
+              class="btn btn-danger btn-sm"
+              onclick="showDeleteModal('income', '{{ category }}')"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="2">No categories available.</td>
+        </tr>
+        {% endfor %}
+        <tr>
+          <td>
+            <input
+              type="text"
+              id="new-category-income"
+              placeholder="Add new category"
+              class="form-control"
+            />
+          </td>
+          <td class="text-right">
+            <button
+              type="button"
+              class="btn btn-success btn-sm"
+              onclick="addCategoryOrAccount('income')"
+            >
+              Add
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Manage Expense Categories -->
+  <div class="form-group">
+    <label class="bold-text">Manage Expense Categories</label>
+    <table class="table table-sm table-striped table-hover">
+      <thead></thead>
+      <tbody id="categories-expenses-list">
+        {% for category in user_preferences.categories_expenses %}
+        <tr>
+          <td>{{ category }}</td>
+          <td class="text-right">
+            <button
+              type="button"
+              class="btn btn-danger btn-sm"
+              onclick="showDeleteModal('expense', '{{ category }}')"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="2">No categories available.</td>
+        </tr>
+        {% endfor %}
+        <tr>
+          <td>
+            <input
+              type="text"
+              id="new-category-expense"
+              placeholder="Add new category"
+              class="form-control"
+            />
+          </td>
+          <td class="text-right">
+            <button
+              type="button"
+              class="btn btn-success btn-sm"
+              onclick="addCategoryOrAccount('expense')"
+            >
+              Add
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Manage Accounts -->
+  <div class="form-group">
+    <label class="bold-text">Manage Accounts</label>
+    <table class="table table-sm table-striped table-hover">
+      <thead></thead>
+      <tbody id="accounts-list">
+        {% for account in user_preferences.accounts %}
+        <tr>
+          <td>{{ account }}</td>
+          <td class="text-right">
+            <button
+              type="button"
+              class="btn btn-danger btn-sm"
+              onclick="showDeleteModal('account', '{{ account }}')"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="2">No accounts available.</td>
+        </tr>
+        {% endfor %}
+        <tr>
+          <td>
+            <input
+              type="text"
+              id="new-account"
+              placeholder="Add new account"
+              class="form-control"
+            />
+          </td>
+          <td class="text-right">
+            <button
+              type="button"
+              class="btn btn-success btn-sm"
+              onclick="addCategoryOrAccount('account')"
+            >
+              Add
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div
+  class="modal fade"
+  id="deleteConfirmationModal"
+  tabindex="-1"
+  aria-labelledby="deleteModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete this item?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-danger" id="confirm-delete-btn">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/general_preferences.js' %}"></script>
 
 {% endblock %}

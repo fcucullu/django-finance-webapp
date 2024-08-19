@@ -12,14 +12,13 @@ from django.http import JsonResponse
 from django.db.models import Q
 
 from configuration.settings import FILTER_BY_OWNER
-from configuration.settings import ROWS_PER_PAGE
 
 @login_required(login_url='/authentication/login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def index(request):
-    categories = Category.objects.all()
-    accounts = Account.objects.all()
-    user_preferences = UserPreferences.objects.get(user=request.user)
+    user_preferences, created = UserPreferences.objects.get_or_create(user=request.user)
+    categories = user_preferences.categories_expenses
+    accounts = user_preferences.accounts
     search_text = request.GET.get('search', '')  # Capture searchText from query parameters
 
     # Determine the base queryset depending on ownership filter
@@ -53,8 +52,9 @@ def index(request):
 @login_required(login_url='/authentication/login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def add_expense(request):
-    categories = Category.objects.all()
-    accounts = Account.objects.all()
+    user_preferences, created = UserPreferences.objects.get_or_create(user=request.user)
+    categories = user_preferences.categories_expenses
+    accounts = user_preferences.accounts
     context = {
         'categories': categories,
         'accounts': accounts,
@@ -101,8 +101,9 @@ def add_expense(request):
 
 def edit_expense(request, id):
     expense=Expense.objects.get(pk=id)
-    categories = Category.objects.all()
-    accounts = Account.objects.all()
+    user_preferences, created = UserPreferences.objects.get_or_create(user=request.user)
+    categories = user_preferences.categories_expenses
+    accounts = user_preferences.accounts
     context = {
         'expense': expense,
         'categories': categories,

@@ -31,7 +31,7 @@
                     <select class="form-control" id="category" name="category">
                         <option value="">--- Select Category ---</option> 
                         {% for category in categories %}
-                            <option value="{{ category.name }}" {% if category.name == values.category %}selected{% endif %}>{{ category.name }}</option>
+                            <option value="{{ category }}" {% if category == values.category %}selected{% endif %}>{{ category }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -40,7 +40,7 @@
                     <select class="form-control" id="account" name="account">
                         <option value="">--- Select Account ---</option> 
                         {% for account in accounts %}
-                            <option value="{{ account.name }}" {% if account.name == values.account %}selected{% endif %}>{{ account.name }}</option>
+                            <option value="{{ account }}" {% if account == values.account %}selected{% endif %}>{{ account }}</option>
                         {% endfor %}
                     </select>
                 </div>

@@ -96,5 +96,10 @@
 
 /* Create space between divs */
 .spaced-div {
-  margin-bottom: 20px;
+  margin-bottom: 30px;
+}
+
+/* For titles */
+.bold-text {
+  font-weight: 600;
 }

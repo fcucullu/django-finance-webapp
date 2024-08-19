@@ -11,6 +11,9 @@ from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeErr
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.sites.shortcuts import get_current_site
 from .utils import token_generator
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login as auth_login
+
 
 class EmailValidationView(View):
     def post(self, request):
@@ -112,12 +115,6 @@ class VerificationView(View):
 
         return redirect('login')
     
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.contrib.auth import authenticate, login as auth_login
-from django.contrib.auth.models import User
-from django.views import View
-
 class LoginView(View):
     def get(self, request):
         # Get the 'next' parameter from the URL, default to '/' if not provided

@@ -45,7 +45,6 @@ emailField.addEventListener("keyup", (e) => {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("data", data);
         emailSuccessOutput.style.display = "none";
         if (data.email_error) {
           isEmailValid = false;
@@ -79,7 +78,6 @@ usernameField.addEventListener("keyup", (e) => {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("data", data);
         usernameSuccessOutput.style.display = "none";
         if (data.username_error) {
           isUsernameValid = false;
