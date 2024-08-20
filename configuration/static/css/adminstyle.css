@@ -1,0 +1,38 @@
+#header {
+    background: #1E2F97;
+    color: #fff;
+}
+
+#branding h1 {
+    color: #fff;
+    font-weight: 500;
+    
+}
+
+div.breadcrumbs {
+    background: #727fe0;
+    color: #fff;
+}
+
+.login .submit-row {
+    padding: 0pxc !important;
+}
+
+input[type=submit], input[type=button], .submit-row input {
+    background: #727fe0;
+    font-weight: 500;
+}
+
+.module caption, .inline-group h2 {
+    background: #66697c;
+    font-weight: 500;
+}
+
+a:link, a:visited {
+    color: #b1b2bb;
+    text-decoration: underline;
+}
+
+.dashboard #content {
+    
+}
