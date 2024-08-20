@@ -19,7 +19,7 @@ def general_preferences(request):
     categories_expenses = user_preferences.categories_expenses
     categories_incomes = user_preferences.categories_incomes
     accounts = user_preferences.accounts
-    print(type(categories_expenses))
+    
     # Currency configuration
     currency_data = []
     file_path = os.path.join(settings.BASE_DIR, 'currencies.json')

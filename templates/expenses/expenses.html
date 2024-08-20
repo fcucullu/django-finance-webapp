@@ -47,7 +47,7 @@
           {% for expense in page_obj %}
           <tr>
             <td>{{ expense.owner }}</td>
-            <td>{{ expense.date|date:"d/m/Y" }}</td>
+            <td>{{ expense.date|date:"Y-m-d" }}</td>
             <td>
               {{ expense.description|slice:":30" }} {% if expense.description|length > 30 %}...{% endif %}
             </td>

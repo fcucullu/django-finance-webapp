@@ -28,13 +28,14 @@ def index(request):
     if search_text:
         expenses = expenses.filter(
             Q(amount__icontains=search_text) |
+            Q(date__icontains=search_text) |
             Q(description__icontains=search_text) |
             Q(category__icontains=search_text) |
             Q(account__icontains=search_text)
         )
 
     expenses = expenses.order_by('-date')
-
+    
     paginator = Paginator(expenses, user_preferences.rows_per_page)
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)

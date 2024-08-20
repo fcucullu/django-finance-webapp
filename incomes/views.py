@@ -28,6 +28,7 @@ def index(request):
     if search_text:
         incomes = incomes.filter(
             Q(amount__icontains=search_text) |
+            Q(date__icontains=search_text) |
             Q(description__icontains=search_text) |
             Q(category__icontains=search_text) |
             Q(account__icontains=search_text)

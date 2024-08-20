@@ -7,8 +7,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const dateValue = dateInput.value;
 
-    // Only set to today's date if the value is empty or in the 'dd/mm/yyyy' format
-    const isDefaultDate = /^\d{2}\/\d{2}\/\d{4}$/.test(dateValue);
+    // Only set to today's date if the value is empty or in the 'yyyy-mm-dd' format
+    const isDefaultDate = /^\d{4}-\d{2}-\d{2}$/.test(dateValue);
+
 
     if (dateValue === '' || isDefaultDate) {
         const today = new Date().toISOString().split('T')[0];

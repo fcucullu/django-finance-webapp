@@ -13,7 +13,7 @@ searchField.addEventListener("keypress", (e) => {
           const url = new URL(window.location.href);
           url.searchParams.set('search', searchValue);
           url.searchParams.set('page', 1); // Go to the first page of results
-
+          
           // Redirect to the new URL with the search query
           window.location.href = url.toString();
       } else {
