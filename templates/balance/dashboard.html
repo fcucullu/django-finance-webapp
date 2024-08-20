@@ -1,0 +1,19 @@
+{% extends "base.html" %} 
+{% load static %} 
+{% block content %} 
+{% include 'partials/_messages.html' %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Balance</title>
+</head>
+<body>
+    <h1>Balance Information</h1>
+    <p>Total Expenses: {{ balance.total_expenses }}</p>
+    <p>Total Income: {{ balance.total_income }}</p>
+    <p>Balance: {{ balance.balance }}</p>
+</body>
+</html>
+    
+{% endblock %}

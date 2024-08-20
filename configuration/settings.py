@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'incomes',
     'userpreferences',
     'authentication',
+    'balance'
 ]
 
 MIDDLEWARE = [
