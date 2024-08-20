@@ -6,4 +6,5 @@ from .models import Balance
 def balance_view(request):
     balance, created = Balance.objects.get_or_create(user=request.user)
     balance = Balance.objects.get(user=request.user)
+    balance.update_balance()
     return render(request, 'balance/dashboard.html', {'balance': balance})

@@ -3,18 +3,18 @@
     <div class="sidebar-sticky">
       <ul class="nav flex-column">
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'dashboard' %}">
+          <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
             <span data-feather="home"></span>
             Dashboard <span class="sr-only">(current)</span>
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'expenses' %}">
+          <a class="nav-link {% if request.resolver_match.url_name == 'expenses' %}active{% endif %}" href="{% url 'expenses' %}">
             Expenses
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'incomes' %}">
+          <a class="nav-link {% if request.resolver_match.url_name == 'incomes' %}active{% endif %}" href="{% url 'incomes' %}">
             <span data-feather="shopping-cart"></span>
             Incomes
           </a>
@@ -51,7 +51,7 @@
       </h6>
       <ul class="nav flex-column mb-2">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'general-preferences' %}">
+          <a class="nav-link {% if request.resolver_match.url_name == 'general-preferences' %}active{% endif %}" href="{% url 'general-preferences' %}">
             <span data-feather="file-text"></span>
             General
           </a>

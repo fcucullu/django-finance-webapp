@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from django.http import JsonResponse
 from django.db.models import Q
+from balance.models import Balance
 
 from configuration.settings import FILTER_BY_OWNER
 
@@ -96,6 +97,9 @@ def add_expense(request):
             account=account
         )
 
+        balance, created = Balance.objects.get_or_create(user=request.user)
+        balance.update_balance()
+
         messages.success(request, 'Expense added successfully')
         return redirect('expenses')
     
@@ -145,6 +149,9 @@ def edit_expense(request, id):
         expense.account=account
         expense.save()
 
+        balance, created = Balance.objects.get_or_create(user=request.user)
+        balance.update_balance()
+
         messages.success(request, 'Expense updated successfully')
         return redirect('expenses')
     
@@ -152,6 +159,10 @@ def edit_expense(request, id):
 def delete_expense(request, id):
     expense = Expense.objects.get(pk=id)
     expense.delete()
+
+    balance, created = Balance.objects.get_or_create(user=request.user)
+    balance.update_balance()
+
     messages.success(request, 'Expense deleted successfully')
     return redirect('expenses')
 

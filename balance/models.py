@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from expenses.models import Expense
 from incomes.models import Income 
+from configuration.settings import FILTER_BY_OWNER
 
 class Balance(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

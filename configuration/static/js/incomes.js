@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var button = event.relatedTarget; // Button that triggered the modal
         var incomeId = button.getAttribute('data-id'); // Extract info from data-* attributes
         var confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-        var deleteUrl = '/income/delete-income/' + incomeId;
+        var deleteUrl = '/incomes/delete-income/' + incomeId;
         confirmDeleteBtn.href = deleteUrl; // Set href to the delete URL
         }); 
     }
