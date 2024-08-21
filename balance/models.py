@@ -10,7 +10,7 @@ class Balance(models.Model):
     total_incomes = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
-    def update_balance(self):
+    def update_balance(self, request):
         self.total_expenses = Expense.objects.filter(owner=request.user).aggregate(total=models.Sum('amount'))['total'] or 0 if FILTER_BY_OWNER else Expense.objects.all().aggregate(total=models.Sum('amount'))['total'] or 0
         self.total_incomes = Income.objects.filter(owner=request.user).aggregate(total=models.Sum('amount'))['total'] or 0 if FILTER_BY_OWNER else Income.objects.all().aggregate(total=models.Sum('amount'))['total'] or 0
         self.balance = self.total_incomes - self.total_expenses
