@@ -130,7 +130,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Changed from 'static' to 
 
 
 LOGIN_URL = 'login'
-LOGOUT_URL = '/authentication/logout' 
+LOGOUT_URL = 'logout' 
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
