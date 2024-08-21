@@ -98,7 +98,7 @@ def add_expense(request):
         )
 
         balance, created = Balance.objects.get_or_create(user=request.user)
-        balance.update_balance()
+        balance.update_balance(request)
 
         messages.success(request, 'Expense added successfully')
         return redirect('expenses')
@@ -150,7 +150,7 @@ def edit_expense(request, id):
         expense.save()
 
         balance, created = Balance.objects.get_or_create(user=request.user)
-        balance.update_balance()
+        balance.update_balance(request)
 
         messages.success(request, 'Expense updated successfully')
         return redirect('expenses')
@@ -161,7 +161,7 @@ def delete_expense(request, id):
     expense.delete()
 
     balance, created = Balance.objects.get_or_create(user=request.user)
-    balance.update_balance()
+    balance.update_balance(request)
 
     messages.success(request, 'Expense deleted successfully')
     return redirect('expenses')

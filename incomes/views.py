@@ -98,7 +98,7 @@ def add_income(request):
         )
 
         balance, created = Balance.objects.get_or_create(user=request.user)
-        balance.update_balance()
+        balance.update_balance(request)
 
         messages.success(request, 'Income added successfully')
         return redirect('incomes')
@@ -150,7 +150,7 @@ def edit_income(request, id):
         income.save()
 
         balance, created = Balance.objects.get_or_create(user=request.user)
-        balance.update_balance()
+        balance.update_balance(request)
 
 
         messages.success(request, 'Income updated successfully')
@@ -162,7 +162,7 @@ def delete_income(request, id):
     income.delete()
 
     balance, created = Balance.objects.get_or_create(user=request.user)
-    balance.update_balance()
+    balance.update_balance(request)
 
     messages.success(request, 'Income deleted successfully')
     return redirect('incomes')
