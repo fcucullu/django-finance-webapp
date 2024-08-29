@@ -84,12 +84,9 @@ class RegistrationView(View):
                 
                 messages.success(request, "Account successfully created! Check your email to activate your user")
                 return render(request, 'authentication/register.html')
-            
-        #messages.success(request, 'Success')
-        #messages.warning(request, 'Warning')
-        #messages.info(request, 'Info')
-        #messages.error(request, 'Error')
-        return render(request, 'authentication/register.html')
+        else:
+            messages.error(request, "Introduce your new Username!")
+            return render(request, 'authentication/register.html', context)
     
 class VerificationView(View):
     def get(self, request, uidb64, token):
@@ -155,3 +152,96 @@ class LogoutView(View):
         auth.logout(request)
         messages.success(request, 'You have been logged out')
         return redirect('login')
+    
+
+class ResetPassword(View):
+    def get(self, request):
+        return render(request, 'authentication/reset-password.html')
+
+    def post(self, request):
+        email = request.POST.get('email')
+        context = {'fieldValues': request.POST}  
+        user = User.objects.filter(email=email)      
+        
+        if user:
+            
+            uidb64 = urlsafe_base64_encode(force_bytes(user[0].pk))
+            domain = get_current_site(request).domain
+            link = reverse('set-newpassword', kwargs={'uidb64':uidb64, 
+                                                'token':token_generator.make_token(user[0])})
+            reset_url= f'http://{domain}{link}'
+
+            email_body = (
+                "Hello,\n\n"
+                "It seems you have requested to reset your password. If this was you, please click the link below to proceed:\n\n"
+                f"{reset_url}\n\n"
+                "If you did not request this, please disregard this email.\n\n"
+                "Best regards,\n"
+                "FinanceWebApp Team"
+            )
+
+            email_object = EmailMessage(
+                'FinanceWebApp - Reset password link',
+                email_body,
+                'franciscocucullu@gmail.com',
+                [email]
+                )
+
+            email_object.send(fail_silently=False)
+
+
+        if len(email) > 0 :
+            messages.success(request, 'If this email is registered, we have sent you a reset link there.')
+        return render(request, 'authentication/reset-password.html', context) 
+
+
+class SetNewPassword(View):
+    def get(self, request, uidb64, token):
+
+        context = {
+            'uidb64': uidb64,
+            'token': token
+            }
+
+        try:
+            id = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=id)
+            if not token_generator.check_token(user, token):
+                messages.info(request, 'Link invalid. Please request a new one')
+                return render(request, 'authentication/reset-password.html', context) 
+
+        except:
+            messages.info(request, 'Something went wrong. Try again or ask for a new link.')
+            return redirect('login')
+        
+        return render(request, 'authentication/set-newpassword.html', context) 
+    
+    def post(self, request, uidb64, token):
+
+        context = {
+            'uidb64': uidb64,
+            'token': token
+        }
+                
+        password = request.POST['password']
+        password2 = request.POST['password2']
+
+        if password != password2:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'authentication/set-newpassword.html', context)
+
+        if len(password) < 6:
+            messages.error(request, 'Password is too short.')
+            return render(request, 'authentication/set-newpassword.html', context)
+
+        try:
+            id = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=id)
+            user.set_password(password)
+            user.save()
+
+            messages.success(request, 'Password reset successfully. Now, please login.')
+            return redirect('login')
+        except:
+            messages.info(request, 'Something went wrong. Try again.')
+            return render(request, 'authentication/set-newpassword.html', context)

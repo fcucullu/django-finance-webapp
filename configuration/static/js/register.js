@@ -4,22 +4,29 @@ const emailField = document.querySelector("#emailField");
 const emailFeedBackArea = document.querySelector(".email_invalid_feedback");
 const usernameSuccessOutput = document.querySelector(".usernameSuccessOutput");
 const emailSuccessOutput = document.querySelector(".emailSuccessOutput");
-const passwordField = document.querySelector("#passwordField");
+const passwordFields = document.querySelectorAll(".password-field");
 const showPasswordToggle = document.querySelector(".showPasswordToggle");
 const submitBtn = document.querySelector(".submit-btn");
 
 let isUsernameValid = false;
 let isEmailValid = false;
 
-const handleToggleInput = (e) => {
-  if (showPasswordToggle.textContent === "SHOW") {
-    showPasswordToggle.textContent = "HIDE";
-    passwordField.setAttribute("type", "text");
-  } else {
-    showPasswordToggle.textContent = "SHOW";
-    passwordField.setAttribute("type", "password");
-  }
+const handleToggleInput = () => {
+  let isPassword = false;
+  passwordFields.forEach(field => {
+    if (field.getAttribute("type") === "password") {
+      field.setAttribute("type", "text");
+      isPassword = true;
+    } else {
+      field.setAttribute("type", "password");
+      isPassword = false;
+    }
+  });
+  // Update the toggle text based on the visibility of the fields
+  showPasswordToggle.textContent = isPassword ? "SHOW" : "HIDE";
 };
+
+showPasswordToggle.addEventListener("click", handleToggleInput);
 
 const checkFormValidity = () => {
   if (isUsernameValid && isEmailValid) {

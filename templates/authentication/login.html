@@ -36,7 +36,7 @@
                 id="passwordField"
                 class="form-control form-control-sm"
               />
-              <small class="float-right py-3 showPasswordToggle">SHOW</small>
+              <small class="float-right showPasswordToggle mb-3">SHOW</small>
             </div>
 
             <input
@@ -45,6 +45,11 @@
               class="btn btn-block btn-primary submit-btn"
             />
           </form>
+        </div>
+
+        <div class="container mb-2">
+          <span>Dont have an account? </span><a href={% url 'register' %}>Register</a> <br>
+          <span>Forgot your password? </span><a href={% url 'reset-password' %}>Reset password</a>
         </div>
       </div>
     </div>
