@@ -69,7 +69,7 @@ class RegistrationView(View):
                 uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
                 domain = get_current_site(request).domain
                 link = reverse('activate', kwargs={'uidb64':uidb64, 
-                                                    'token':token_generator.make_token(user)})
+                                                    'token':token_generator.generate_token(user)})
                 activate_url= f'http://{domain}{link}'
 
                 email = EmailMessage(
@@ -168,7 +168,7 @@ class ResetPassword(View):
             uidb64 = urlsafe_base64_encode(force_bytes(user[0].pk))
             domain = get_current_site(request).domain
             link = reverse('set-newpassword', kwargs={'uidb64':uidb64, 
-                                                'token':token_generator.make_token(user[0])})
+                                                'token':token_generator.generate_token(user[0])})
             reset_url= f'http://{domain}{link}'
 
             email_body = (
@@ -207,7 +207,7 @@ class SetNewPassword(View):
             id = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=id)
             if not token_generator.check_token(user, token):
-                messages.info(request, 'Link invalid. Please request a new one')
+                messages.info(request, 'Link invalid or used. Please request a new one')
                 return render(request, 'authentication/reset-password.html', context) 
 
         except:
