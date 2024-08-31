@@ -11,8 +11,7 @@ import json
 from django.http import JsonResponse
 from django.db.models import Q
 from balance.models import Balance
-
-from configuration.settings import FILTER_BY_OWNER
+import datetime
 
 @login_required(login_url='/authentication/login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -23,7 +22,7 @@ def index(request):
     search_text = request.GET.get('search', '')  # Capture searchText from query parameters
 
     # Determine the base queryset depending on ownership filter
-    expenses = Expense.objects.filter(owner=request.user) if FILTER_BY_OWNER else Expense.objects.all()
+    expenses = Expense.objects.filter(owner=request.user)
 
     # Apply filtering if searchText is present
     if search_text:
@@ -166,3 +165,36 @@ def delete_expense(request, id):
     messages.success(request, 'Expense deleted successfully')
     return redirect('expenses')
 
+
+#ENDPOINTS
+def expense_category_summary(request):
+    today = datetime.date.today()
+    six_month_ago = today-datetime.timedelta(days=30*6)
+    expenses = Expense.objects.filter(owner = request.user,
+                                      date__gte = six_month_ago, 
+                                      date__lte = today)
+
+    result = {}
+
+    def get_category(expense):
+        return expense.category
+    
+    category_list = list(set(map(get_category, expenses)))
+
+    def get_expense_category_amount(category):
+        amount = 0
+
+        filtered_by_category = expenses.filter(category = category)
+        
+        for i in filtered_by_category:
+            amount += i.amount
+        return amount
+
+    for e in expenses:
+        for c in category_list:
+            result[c] = get_expense_category_amount(c)
+
+    return JsonResponse({'expense_category_data': result}, safe = False)
+
+def expenses_summary(request):
+    return render(request, 'expenses/expenses_summary.html')

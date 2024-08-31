@@ -13,6 +13,15 @@ from django.contrib.sites.shortcuts import get_current_site
 from .utils import token_generator
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login
+import threading
+
+class EmailThread(threading.Thread):
+    def __init__(self, email):
+        self.email = email
+        threading.Thread.__init__(self)
+
+    def run(self):
+        self.email.send(fail_silently=False)
 
 
 class EmailValidationView(View):
@@ -79,7 +88,7 @@ class RegistrationView(View):
                     [email]
                     )
 
-                email.send(fail_silently=False)
+                EmailThread(email).start()
                 
                 
                 messages.success(request, "Account successfully created! Check your email to activate your user")
@@ -187,7 +196,7 @@ class ResetPassword(View):
                 [email]
                 )
 
-            email_object.send(fail_silently=False)
+            EmailThread(email_object).start()
 
 
         if len(email) > 0 :

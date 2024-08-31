@@ -12,8 +12,6 @@ from django.http import JsonResponse
 from django.db.models import Q
 from balance.models import Balance
 
-from configuration.settings import FILTER_BY_OWNER
-
 @login_required(login_url='/authentication/login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def index(request):
@@ -23,7 +21,7 @@ def index(request):
     search_text = request.GET.get('search', '')  # Capture searchText from query parameters
 
     # Determine the base queryset depending on ownership filter
-    incomes = Income.objects.filter(owner=request.user) if FILTER_BY_OWNER else Income.objects.all()
+    incomes = Income.objects.filter(owner=request.user)
 
     # Apply filtering if searchText is present
     if search_text:
