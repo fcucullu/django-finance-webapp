@@ -11,7 +11,7 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb bg-white text-dark mb-2 rounded">
           <li class="breadcrumb-item">
-            <a href="{% url 'incomes' %}">Incomes</a>
+            <span class="breadcrumb-item active">Incomes</span>
           </li>
           <li class="breadcrumb-item active" aria-current="page">
             My Incomes
@@ -55,8 +55,8 @@
             <td>{{ income.category }}</td>
             <td>{{ income.account }}</td>
             <td class="amount-cell">{{ income.amount }}</td>
-            <td>
-              <a href="{% url 'edit-income' income.id %}" class="btn btn-secondary btn-sm rounded">Edit</a>
+            <td class="d-flex justify-content-center">
+              <a href="{% url 'edit-income' income.id %}" class="btn btn-secondary btn-sm rounded mr-2">Edit</a>
               <button
                 type="button"
                 class="btn btn-danger btn-sm rounded"

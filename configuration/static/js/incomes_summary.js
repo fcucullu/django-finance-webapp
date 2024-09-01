@@ -25,7 +25,7 @@ const renderLineChart = (chartInstance, canvasId, chartTitle, labels, data) => {
     options: {
       plugins: {
         title: {
-          display: true,
+          display: false,
           text: chartTitle,
         },
         legend: {
@@ -65,7 +65,7 @@ const renderPolarAreaChart = (
     options: {
       plugins: {
         title: {
-          display: true,
+          display: false,
           text: chartTitle,
         },
         legend: {

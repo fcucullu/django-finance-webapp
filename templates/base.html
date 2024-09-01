@@ -14,8 +14,12 @@
   </head>
   <body>
     <nav class="navbar navbar-light bg-white fixed-top flex-md-nowrap p-0 shadow">
-      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Finance WebApp</a>
+      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="{% url 'dashboard' %}">Finance WebApp</a>
+
+      {% if request.resolver_match.url_name == 'expenses' or request.resolver_match.url_name == 'incomes' %}
       <input class="form-control form-control-dark w-100 ml-2 rounded search-field" type="text" id="searchField" placeholder="Search" aria-label="Search" value="{{ search_text }}">
+      {% endif %}
+
       <ul class="navbar-nav px-3">
         <li class="nav-item text-nowrap">
           <form action="{% url 'logout' %}" method="POST">

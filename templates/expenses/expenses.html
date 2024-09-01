@@ -9,8 +9,8 @@
     <div class="col-md-10">
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb bg-white text-dark mb-2 rounded">
-          <li class="breadcrumb-item">
-            <a href="{% url 'expenses' %}">Expenses</a>
+          <li class="breadcrumb-item active">
+            <span>Expenses</span>
           </li>
           <li class="breadcrumb-item active" aria-current="page">
             My Expenses
@@ -53,10 +53,10 @@
             <td>{{ expense.category }}</td>
             <td>{{ expense.account }}</td>
             <td class="amount-cell">{{ expense.amount }}</td>
-            <td>
+            <td class="d-flex justify-content-center">
               <a
                 href="{% url 'edit-expense' expense.id %}"
-                class="btn btn-secondary btn-sm rounded"
+                class="btn btn-secondary btn-sm rounded mr-2"
                 >Edit</a
               >
               <button

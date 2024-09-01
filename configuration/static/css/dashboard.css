@@ -123,3 +123,7 @@ body {
   border-radius: 0.25rem;
   margin-top: 0.25rem; /* Optional, to adjust vertical alignment */
 }
+
+.nav-item {
+  padding-left: 20px; /* Adjust the value to your desired level of indentation */
+}
