@@ -20,7 +20,7 @@
         <li class="nav-item text-nowrap">
           <form action="{% url 'logout' %}" method="POST">
             {% csrf_token %}
-            <input class="btn btn-outline-secondary rounded" type="submit" value="Sign out" />
+            <input class="btn btn-outline-secondary rounded mb-1" type="submit" value="Sign out" />
           </form>
         </li>
       </ul>
