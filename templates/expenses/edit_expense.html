@@ -18,7 +18,7 @@
             </nav>
         </div>
         <div class="col-md-2 text-md-right mb-2">
-            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+            <button type="button" class="btn btn-danger rounded" data-bs-toggle="modal" data-bs-target="#deleteModal">
                 Delete Expense
             </button>
         </div>
@@ -77,8 +77,8 @@
                     <label for="amount">Amount</label>
                     <input type="floatformat" class="form-control form-control-sm" id="amount" name="amount" value="{{ values.amount|floatformat:2 }}">
                 </div>
-                <input type="submit" value="Save" class="btn btn-primary btn-primary-sm">
-                <a href="{% url 'expenses' %}" class="btn btn-secondary">Cancel</a>
+                <input type="submit" value="Save" class="btn btn-primary btn-primary-sm rounded">
+                <a href="{% url 'expenses' %}" class="btn btn-secondary rounded">Cancel</a>
             </form>
         </div>
     </div>

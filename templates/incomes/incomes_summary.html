@@ -22,7 +22,7 @@
         </div>
         <div class="col-md-2 text-md-right mb-2">
             <div class="selectBox">
-                <select id="intervalSelect" class="form-control">
+                <select id="intervalSelect" class="form-control rounded">
                     {% for interval in intervals %}
                         <option value="{{ interval }}" {% if interval == "Year" %}selected{% endif %}>{{ interval }}</option>
                     {% endfor %}

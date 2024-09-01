@@ -103,10 +103,3 @@
 .bold-text {
   font-weight: 600;
 }
-
-
-canvas {
-  width: 100% !important;
-  height: auto !important;
-}
-
