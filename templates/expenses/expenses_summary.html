@@ -19,16 +19,45 @@
       </nav>
     </div>
     <div class="col-md-2">
-      <a href="{% url 'add-expenses' %}" class="btn btn-primary">Back</a>
+      <a href="#" class="btn btn-primary">Export</a>
     </div>
-
-    <div> 
-        <canvas id="myChart" width="400" height="400"></canvas> 
-    </div>
- 
   </div>
 
-</div>
+  <!-- Upper Half -->
+  <div class="row mt-4">
+    <div class="col-md-12">
+      <div class="selectBox mb-3">
+        <select id="intervalSelect">
+          {% for interval in intervals %}
+            <option value="{{ interval }}" {% if interval == "Year" %}selected{% endif %}>{{ interval }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <canvas id="total_chart" width="400" height="80"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lower Half -->
+  <div class="row mt-4">
+    <!-- Left Half -->
+    <div class="col-md-6">
+        <h2>Mean Expense by Category</h2>
+      <div class="table-responsive">
+        <table id="mean_table" class="table">
+          <!-- Table content will be dynamically generated -->
+        </table>
+      </div>
+    </div>
+
+    <!-- Right Half -->
+    <div class="col-md-6">
+      <div>
+        <canvas id="share_chart" width="400" height="400"></canvas>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="{% static 'js/expenses_summary.js' %}"></script>

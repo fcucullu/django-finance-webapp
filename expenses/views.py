@@ -11,7 +11,13 @@ import json
 from django.http import JsonResponse
 from django.db.models import Q
 from balance.models import Balance
+from django.db.models import Sum
 import datetime
+from configuration.settings import DEFAULT_DAYS_IN_TIME_INTERVALS
+
+#########################################################
+##                 START VIEWS SECTION                 ##
+#########################################################
 
 @login_required(login_url='/authentication/login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -103,6 +109,8 @@ def add_expense(request):
         return redirect('expenses')
     
 
+@login_required(login_url='/authentication/login')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def edit_expense(request, id):
     expense=Expense.objects.get(pk=id)
     user_preferences, created = UserPreferences.objects.get_or_create(user=request.user)
@@ -154,7 +162,20 @@ def edit_expense(request, id):
         messages.success(request, 'Expense updated successfully')
         return redirect('expenses')
     
-@csrf_exempt
+
+@login_required(login_url='/authentication/login')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def expenses_summary(request):
+    intervals = list(DEFAULT_DAYS_IN_TIME_INTERVALS.keys())
+    return render(request, 'expenses/expenses_summary.html', {"intervals": intervals})
+
+
+#########################################################
+##               START ENDPOINT SECTION                ##
+#########################################################
+
+@login_required(login_url='/authentication/login')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def delete_expense(request, id):
     expense = Expense.objects.get(pk=id)
     expense.delete()
@@ -166,35 +187,43 @@ def delete_expense(request, id):
     return redirect('expenses')
 
 
-#ENDPOINTS
-def expense_category_summary(request):
+@login_required(login_url='/authentication/login')
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def get_expenses_by_category(request, interval, calculation_type="total"):
     today = datetime.date.today()
-    six_month_ago = today-datetime.timedelta(days=30*6)
-    expenses = Expense.objects.filter(owner = request.user,
-                                      date__gte = six_month_ago, 
-                                      date__lte = today)
+    delta_days = DEFAULT_DAYS_IN_TIME_INTERVALS[interval]
+    start_date = today - datetime.timedelta(days=delta_days)
+
+    expenses = Expense.objects.filter(owner=request.user, date__gte=start_date, date__lte=today)
 
     result = {}
 
     def get_category(expense):
         return expense.category
-    
+
     category_list = list(set(map(get_category, expenses)))
 
-    def get_expense_category_amount(category):
-        amount = 0
+    def calculate_total(category):
+        return expenses.filter(category=category).aggregate(total_amount=Sum('amount'))['total_amount'] or 0
 
-        filtered_by_category = expenses.filter(category = category)
-        
-        for i in filtered_by_category:
-            amount += i.amount
-        return amount
+    def calculate_mean(category):
+        return expenses.filter(category=category).aggregate(mean_amount=Avg('amount'))['mean_amount'] or 0
 
-    for e in expenses:
-        for c in category_list:
-            result[c] = get_expense_category_amount(c)
+    def calculate_proportion(category):
+        total_expense = expenses.aggregate(total=Sum('amount'))['total'] or 1
+        category_total = calculate_total(category)
+        return (category_total / total_expense) * 100 if total_expense > 0 else 0
 
-    return JsonResponse({'expense_category_data': result}, safe = False)
+    calculation_function_map = {
+        "total": calculate_total,
+        "mean": calculate_mean,
+        "proportions": calculate_proportion,
+    }
 
-def expenses_summary(request):
-    return render(request, 'expenses/expenses_summary.html')
+    calculation_function = calculation_function_map.get(calculation_type, calculate_total)
+
+    for c in category_list:
+        result[c] = calculation_function(c)
+
+    return JsonResponse({'expenses_by_category': result}, safe=False)
+
