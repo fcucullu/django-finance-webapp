@@ -1,20 +1,32 @@
 {% extends "base.html" %}
-
 {% load static %}
 
 {% block content %}
 
 <div class="container mt-4">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb"> 
-            <li class="breadcrumb-item"><a href="{% url 'expenses' %}">Expenses</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Add Expenses</li>
-        </ol>
-    </nav>
+    <!-- HEADER -->
+    <div class="row align-items-center mb-4">
+        <div class="col-md-10">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-white text-dark rounded mb-2">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'expenses' %}">Expenses</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        Add Expenses
+                    </li>
+                </ol>
+            </nav>
+        </div>
+        <div class="col-md-2 text-md-right mb-2">
+            <a href="{% url 'expenses' %}" class="btn btn-primary">Back to Expenses</a>
+        </div>
+    </div>
 
     {% include 'partials/_messages.html' %}
 
-    <div class="card">
+    <!-- FORM CARD -->
+    <div class="card bg-white rounded shadow-sm">
         <div class="card-body">
             <form action="{% url 'add-expenses' %}" method="post">
                 {% csrf_token %}
@@ -29,7 +41,7 @@
                 <div class="form-group">
                     <label for="category">Category</label>
                     <select class="form-control" id="category" name="category">
-                        <option value="">--- Select Category ---</option> 
+                        <option value="">--- Select Category ---</option>
                         {% for category in categories %}
                             <option value="{{ category }}" {% if category == values.category %}selected{% endif %}>{{ category }}</option>
                         {% endfor %}
@@ -38,7 +50,7 @@
                 <div class="form-group">
                     <label for="account">Account</label>
                     <select class="form-control" id="account" name="account">
-                        <option value="">--- Select Account ---</option> 
+                        <option value="">--- Select Account ---</option>
                         {% for account in accounts %}
                             <option value="{{ account }}" {% if account == values.account %}selected{% endif %}>{{ account }}</option>
                         {% endfor %}

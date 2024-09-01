@@ -13,14 +13,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4"></script> 
   </head>
   <body>
-    <nav class="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+    <nav class="navbar navbar-light bg-white fixed-top flex-md-nowrap p-0 shadow">
       <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Finance WebApp</a>
-      <input class="form-control form-control-dark w-100" type="text" id="searchField" placeholder="Search" aria-label="Search" value="{{ search_text }}">
+      <input class="form-control form-control-dark w-100 ml-2 rounded search-field" type="text" id="searchField" placeholder="Search" aria-label="Search" value="{{ search_text }}">
       <ul class="navbar-nav px-3">
         <li class="nav-item text-nowrap">
           <form action="{% url 'logout' %}" method="POST">
             {% csrf_token %}
-            <input class="text text-capitalize" type="submit" value="Sign out" />
+            <input class="btn btn-outline-secondary rounded" type="submit" value="Sign out" />
           </form>
         </li>
       </ul>

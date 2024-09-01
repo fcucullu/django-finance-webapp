@@ -30,13 +30,13 @@
       </h6>
       <ul class="nav flex-column mb-2">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'expenses-summary' %}">
+          <a class="nav-link {% if request.resolver_match.url_name == 'expenses-summary' %}active{% endif %}" href="{% url 'expenses-summary' %}">
             <span data-feather="file-text"></span>
             Expenses Summary
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">
+          <a class="nav-link {% if request.resolver_match.url_name == 'incomes-summary' %}active{% endif %}" href="{% url 'incomes-summary' %}">
             <span data-feather="file-text"></span>
             Incomes Summary
           </a>
