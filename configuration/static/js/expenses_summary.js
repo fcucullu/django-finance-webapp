@@ -1,50 +1,49 @@
+// Initialize chart instances
 let totalChartInstance = null;
 let meanTableInstance = null;
 let shareChartInstance = null;
 
 // Function to render a line chart
-const renderLineChart = (chartInstance, canvasId, chartTitle, labels, data) => {
-  const ctx = document.getElementById(canvasId);
+const renderLineChart = (chartInstance, canvasId, jsonData) => {
+  const ctx = document.getElementById(canvasId).getContext('2d');
 
+  // Convert the JSON data to the correct format for Chart.js
+  const labels = jsonData.labels;
+  const datasets = jsonData.datasets.map(dataset => ({
+    label: dataset.label,
+    data: dataset.data.map(value => Number(value)),  // Convert Decimal to Number
+    borderWidth: dataset.borderWidth
+  }));
+
+  // Destroy the existing chart instance if it exists
   if (chartInstance) {
     chartInstance.destroy();
   }
 
+  // Create a new Chart.js instance
   return new Chart(ctx, {
     type: "line",
     data: {
       labels: labels,
-      datasets: [
-        {
-          label: "Expenses",
-          data: data,
-          borderWidth: 1,
-        },
-      ],
+      datasets: datasets
     },
     options: {
       plugins: {
         title: {
-          display: false,
-          text: chartTitle,
+          display: true,
+          text: 'Your Chart Title'
         },
         legend: {
-          align: "start",
-        },
-      },
-    },
+          align: "start"
+        }
+      }
+    }
   });
 };
 
 // Function to render a polar area chart
-const renderPolarAreaChart = (
-  chartInstance,
-  canvasId,
-  chartTitle,
-  labels,
-  data
-) => {
-  const ctx = document.getElementById(canvasId);
+const renderPolarAreaChart = (chartInstance, canvasId, labels, data, chartTitle = '') => {
+  const ctx = document.getElementById(canvasId).getContext('2d');
 
   if (chartInstance) {
     chartInstance.destroy();
@@ -58,21 +57,21 @@ const renderPolarAreaChart = (
         {
           label: "Expenses",
           data: data,
-          borderWidth: 1,
-        },
-      ],
+          borderWidth: 1
+        }
+      ]
     },
     options: {
       plugins: {
         title: {
           display: false,
-          text: chartTitle,
+          text: chartTitle
         },
         legend: {
-          align: "start",
-        },
-      },
-    },
+          align: "start"
+        }
+      }
+    }
   });
 };
 
@@ -88,14 +87,14 @@ const renderTable = (tableId, data) => {
     </thead>
     <tbody>`;
 
-  let totalSum = 0; // Initialize total sum for average expenses
-  let itemCount = 0; // Initialize item count for calculating the total average
+  let totalSum = 0;
+  let itemCount = 0;
 
   for (const [category, average] of Object.entries(data)) {
-    const averageNumber = Number(average); // Convert to number
+    const averageNumber = Number(average);
     if (!isNaN(averageNumber)) {
-      totalSum += averageNumber; // Accumulate total sum
-      itemCount += 1; // Increment item count
+      totalSum += averageNumber;
+      itemCount += 1;
     }
 
     tableHtml += `
@@ -105,9 +104,7 @@ const renderTable = (tableId, data) => {
       </tr>`;
   }
 
-  // Calculate total average
-  const totalAverage =
-    itemCount > 0 ? (totalSum / itemCount).toFixed(2) : "N/A";
+  const totalAverage = itemCount > 0 ? (totalSum / itemCount).toFixed(2) : "N/A";
 
   tableHtml += `
     </tbody>
@@ -119,9 +116,6 @@ const renderTable = (tableId, data) => {
     </tfoot>`;
 
   table.innerHTML = tableHtml;
-
-  // Print category and average to the console
-  console.log(`Total Average: ${totalAverage}`);
 };
 
 // Function to get data and render charts/tables
@@ -129,9 +123,7 @@ const getChartData = (interval) => {
   const types = ["total", "mean", "proportions"];
 
   types.forEach((type) => {
-    fetch(
-      `/expenses/get_expenses_by_category/${interval}?calculation_type=${type}`
-    )
+    fetch(`/expenses/get_expenses_by_category/${interval}?calculation_type=${type}`)
       .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
@@ -140,19 +132,13 @@ const getChartData = (interval) => {
       })
       .then((results) => {
         const expenses_by_category = results.expenses_by_category || {};
-        const [labels, data] = [
-          Object.keys(expenses_by_category),
-          Object.values(expenses_by_category),
-        ];
 
         switch (type) {
           case "total":
             totalChartInstance = renderLineChart(
               totalChartInstance,
               "total_chart",
-              "Total Expenses by Category",
-              labels,
-              data
+              expenses_by_category
             );
             break;
           case "mean":
@@ -162,9 +148,8 @@ const getChartData = (interval) => {
             shareChartInstance = renderPolarAreaChart(
               shareChartInstance,
               "share_chart",
-              "Expense Share by Category",
-              labels,
-              data
+              Object.keys(expenses_by_category),
+              Object.values(expenses_by_category)
             );
             break;
           default:
@@ -180,17 +165,12 @@ const getChartData = (interval) => {
 // Set default chart load
 document.addEventListener("DOMContentLoaded", () => {
   const defaultInterval = "Year";
-
-  // Initialize charts and table with default interval
   getChartData(defaultInterval);
 
-  // Add event listener for interval change
   document
     .getElementById("intervalSelect")
     .addEventListener("change", (event) => {
       const selectedInterval = event.target.value;
-
-      // Fetch data for all charts and table based on selected interval
       getChartData(selectedInterval);
     });
 });

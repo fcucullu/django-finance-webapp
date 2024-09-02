@@ -13,6 +13,8 @@ from django.db.models import Q
 from balance.models import Balance
 from django.db.models import Sum
 import datetime
+import pandas as pd
+from collections import defaultdict
 from configuration.settings import DEFAULT_DAYS_IN_TIME_INTERVALS
 
 #########################################################
@@ -191,11 +193,11 @@ def delete_expense(request, id):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def get_expenses_by_category(request, interval, calculation_type="total"):
     today = datetime.date.today()
-    delta_days = DEFAULT_DAYS_IN_TIME_INTERVALS[interval]
+    delta_days = DEFAULT_DAYS_IN_TIME_INTERVALS[interval][0]
     start_date = today - datetime.timedelta(days=delta_days)
 
     expenses = Expense.objects.filter(owner=request.user, date__gte=start_date, date__lte=today)
-
+    
     result = {}
 
     def get_category(expense):
@@ -203,27 +205,99 @@ def get_expenses_by_category(request, interval, calculation_type="total"):
 
     category_list = list(set(map(get_category, expenses)))
 
-    def calculate_total(category):
-        return expenses.filter(category=category).aggregate(total_amount=Sum('amount'))['total_amount'] or 0
+    def calculate_total(request, start_date, today, interval):
+        return build_datasets_for_total_chart(request, start_date, today, interval)
 
     def calculate_mean(category):
         return expenses.filter(category=category).aggregate(mean_amount=Avg('amount'))['mean_amount'] or 0
 
     def calculate_proportion(category):
         total_expense = expenses.aggregate(total=Sum('amount'))['total'] or 1
-        category_total = calculate_total(category)
+        category_total = expenses.filter(category=category).aggregate(total_amount=Sum('amount'))['total_amount'] or 0
         return (category_total / total_expense) * 100 if total_expense > 0 else 0
 
+    # Define the calculation function map with lambdas for category-specific calculations
     calculation_function_map = {
-        "total": calculate_total,
-        "mean": calculate_mean,
-        "proportions": calculate_proportion,
+        "total": lambda: calculate_total(request, start_date, today, interval),
+        "mean": lambda category: calculate_mean(category),
+        "proportions": lambda category: calculate_proportion(category),
     }
 
-    calculation_function = calculation_function_map.get(calculation_type, calculate_total)
+    # Retrieve the calculation function based on calculation_type
+    calculation_function = calculation_function_map.get(calculation_type, lambda: calculate_total(request, start_date, today, interval))
 
-    for c in category_list:
-        result[c] = calculation_function(c)
+    if calculation_type == "total":
+        # If calculation_type is "total", execute the function without a category
+        result = calculation_function()
+    else:
+        # For "mean" and "proportions", apply the function per category
+        result = {category: calculation_function(category) for category in category_list}
 
+    # Return result as JSON response
     return JsonResponse({'expenses_by_category': result}, safe=False)
 
+def get_expenses_series_by_category(request, start_date, today, interval):
+    expenses = Expense.objects.filter(owner=request.user, date__gte=start_date, date__lte=today)
+
+    # Create a dictionary to store the dataframes
+    category_dataframes = defaultdict(pd.DataFrame)
+
+    # Iterate over the expenses and populate the dictionary
+    for expense in expenses:
+        category = expense.category
+        # Create a dataframe with the date and amount of the current expense
+        expense_df = pd.DataFrame({
+            'date': [expense.date],
+            'amount': [float(expense.amount)]  # Convert Decimal to float
+        })
+        # Append the current expense dataframe to the category's dataframe
+        category_dataframes[category] = pd.concat([category_dataframes[category], expense_df], ignore_index=True)
+
+    # Convert defaultdict to a regular dictionary
+    category_dataframes = dict(category_dataframes)
+
+    return category_dataframes
+
+def group_data_by_interval(category_dataframes, interval):
+    for category, df in category_dataframes.items():
+        # Ensure the 'date' column is a datetime type
+        df['date'] = pd.to_datetime(df['date'])
+        group_by = DEFAULT_DAYS_IN_TIME_INTERVALS[interval][1]
+
+        df_grouped = df.resample(group_by, on='date').sum()
+
+        # Update the dictionary with the grouped DataFrame
+        category_dataframes[category] = df_grouped
+
+    return category_dataframes
+
+def build_datasets_for_total_chart(request, start_date, today, interval):
+    data = get_expenses_series_by_category(request, start_date, today, interval)
+    data = group_data_by_interval(data, interval)
+
+    # Debugging: Print the data to check its structure
+    print("Grouped Data:", data)
+    
+    # Prepare datasets for Chart.js
+    datasets = []
+    for category, df in data.items():
+        # Debugging: Print the dataframe for each category
+        print(f"Data for category {category}:", df)
+        
+        datasets.append({
+            'label': category,
+            'data': df['amount'].tolist(),  # List of amounts grouped by interval
+            'borderWidth': 1,
+        })
+
+    # Extract the labels (e.g., months, weeks) for the x-axis
+    # Ensure the index is not empty
+    if data:
+        labels = data[next(iter(data))].index.strftime('%Y-%m').tolist()
+        # Debugging: Print labels to ensure they are correct
+        print("Labels:", labels)
+    else:
+        labels = []
+
+    response_data = {'datasets': datasets, 'labels': labels}
+    return response_data
