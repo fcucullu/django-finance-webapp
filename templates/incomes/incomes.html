@@ -31,7 +31,6 @@
       <table class="table table-hover mb-0">
         <thead>
           <tr>
-            <th>User</th>
             <th>Date</th>
             <th>Description</th>
             <th>Category</th>
@@ -47,7 +46,6 @@
         <tbody class="table-default-body">
           {% for income in page_obj %}
           <tr>
-            <td>{{ income.owner }}</td>
             <td>{{ income.date|date:"Y-m-d" }}</td>
             <td>
               {{ income.description|slice:":30" }} {% if income.description|length > 30 %}...{% endif %}
