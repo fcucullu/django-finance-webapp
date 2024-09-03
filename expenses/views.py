@@ -188,70 +188,84 @@ def delete_expense(request, id):
     messages.success(request, 'Expense deleted successfully')
     return redirect('expenses')
 
+import traceback
 
 @login_required(login_url='/authentication/login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
-def get_expenses_by_category(request, interval, calculation_type="total"):
+def get_expenses_by_category(request, interval):
+    # Get the calculation_type from query parameters
+    calculation_type = request.GET.get('calculation_type')
+
     print(f"\n### Received Calculation Type: {calculation_type} ###")
 
-    today = datetime.date.today()
-    delta_days = DEFAULT_DAYS_IN_TIME_INTERVALS[interval][0]
-    start_date = today - datetime.timedelta(days=delta_days)
+    try:
+        today = datetime.date.today()
+        delta_days = DEFAULT_DAYS_IN_TIME_INTERVALS.get(interval, [365])[0]
+        start_date = today - datetime.timedelta(days=delta_days)
 
-    expenses = Expense.objects.filter(owner=request.user, date__gte=start_date, date__lte=today)
-    
-    result = {}
+        expenses = Expense.objects.filter(owner=request.user, date__gte=start_date, date__lte=today)
 
-    def get_category(expense):
-        return expense.category
+        result = {}
 
-    category_list = list(set(map(get_category, expenses)))
+        def get_category(expense):
+            return expense.category
 
-    def calculate_total(request, start_date, today, interval):
-        print("\nCalculating Total...\n")
-        total_result = build_datasets_for_total_chart(request, start_date, today, interval)
-        print(f"\n### Total Calculation Result: {total_result} ###\n")
-        return total_result
+        category_list = list(set(map(get_category, expenses)))
 
-    def calculate_mean(category):
-        mean_result = expenses.filter(category=category).aggregate(mean_amount=Avg('amount'))['mean_amount'] or 0
-        print(f"\n### Mean for {category}: {mean_result} ###\n")
-        return mean_result
+        def calculate_total(request, start_date, today, interval):
+            print("\nCalculating Total...\n")
+            total_result = build_datasets_for_total_chart(request, start_date, today, interval)
+            print(f"\n### Total Calculation Result: {total_result} ###\n")
+            return total_result
 
-    def calculate_proportion(category):
-        total_expense = expenses.aggregate(total=Sum('amount'))['total'] or 1
-        category_total = expenses.filter(category=category).aggregate(total_amount=Sum('amount'))['total_amount'] or 0
-        proportion_result = (category_total / total_expense) * 100 if total_expense > 0 else 0
-        print(f"\n### Proportion for {category}: {proportion_result}% ###\n")
-        return proportion_result
+        def calculate_mean(category):
+            mean_result = expenses.filter(category=category).aggregate(mean_amount=Avg('amount'))['mean_amount'] or 0
+            print(f"\n### Mean for {category}: {mean_result} ###\n")
+            return mean_result
 
-    calculation_function_map = {
-        "total": lambda: calculate_total(request, start_date, today, interval),
-        "mean": lambda category: calculate_mean(category),
-        "proportions": lambda category: calculate_proportion(category),
-    }
+        def calculate_proportion(category):
+            total_expense = expenses.aggregate(total=Sum('amount'))['total'] or 1
+            category_total = expenses.filter(category=category).aggregate(total_amount=Sum('amount'))['total_amount'] or 0
+            proportion_result = (category_total / total_expense) * 100 if total_expense > 0 else 0
+            print(f"\n### Proportion for {category}: {proportion_result}% ###\n")
+            return proportion_result
 
-    calculation_function = calculation_function_map.get(calculation_type, lambda: calculate_total(request, start_date, today, interval))
-
-    if calculation_type == "total":
-        result = calculation_function()
-    else:
-        print(f"\n### Categories to Process: {category_list} ###\n")
-        result = {
-            'labels': category_list,
-            'datasets': [{
-                'label': calculation_type.capitalize(),
-                'data': [calculation_function(category) for category in category_list],
-                'borderWidth': 1,
-            }]
+        calculation_function_map = {
+            "total": lambda: calculate_total(request, start_date, today, interval),
+            "mean": lambda category: calculate_mean(category),
+            "proportions": lambda category: calculate_proportion(category),
         }
 
-    print(f"\n### Final Result for {calculation_type}: {result} ###\n")
+        calculation_function = calculation_function_map.get(calculation_type, lambda: None)
 
-    return JsonResponse({'expenses_by_category': result}, safe=False)
+        if calculation_type == "total":
+            result = calculation_function()
+        elif calculation_type in ["mean", "proportions"]:
+            print(f"\n### Categories to Process: {category_list} ###\n")
+            result = {
+                'labels': category_list,
+                'datasets': [{
+                    'label': calculation_type.capitalize(),
+                    'data': [calculation_function(category) for category in category_list],
+                    'borderWidth': 1,
+                }]
+            }
+        else:
+            result = {"error": "Invalid calculation type."}
+
+        print(f"\n### Final Result for {calculation_type}: {result} ###\n")
+
+        return JsonResponse({'expenses_by_category': result}, safe=False)
+
+    except Exception as e:
+        print(f"\n### Exception Occurred: {str(e)} ###")
+        print(traceback.format_exc())
+        return JsonResponse({'error': 'Internal server error'}, status=500)
 
 
-def get_expenses_series_by_category(request, start_date, today, interval):
+
+
+def get_expenses_series_by_category(request, start_date, today):
     expenses = Expense.objects.filter(owner=request.user, date__gte=start_date, date__lte=today)
 
     category_dataframes = defaultdict(pd.DataFrame)
@@ -278,7 +292,7 @@ def group_data_by_interval(category_dataframes, interval):
 
 
 def build_datasets_for_total_chart(request, start_date, today, interval):
-    data = get_expenses_series_by_category(request, start_date, today, interval)
+    data = get_expenses_series_by_category(request, start_date, today)
     data = group_data_by_interval(data, interval)
 
     datasets = []

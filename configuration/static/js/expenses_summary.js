@@ -111,7 +111,10 @@ const getChartData = (interval) => {
   const types = ["total", "mean", "proportions"];
 
   types.forEach((type) => {
-    fetch(`/expenses/get_expenses_by_category/${interval}?calculation_type=${type}`)
+    const url = `/expenses/get_expenses_by_category/${interval}?calculation_type=${type}`;
+    console.log(`Fetching data from: ${url}`);
+
+    fetch(url)
       .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
@@ -120,6 +123,7 @@ const getChartData = (interval) => {
       })
       .then((results) => {
         const expenses_by_category = results.expenses_by_category || {};
+        console.log(`Results for ${type}:`, expenses_by_category);
 
         switch (type) {
           case "total":
@@ -144,10 +148,12 @@ const getChartData = (interval) => {
         }
       })
       .catch((error) => {
-        console.error("Error fetching data:", error);
+        console.error(`Error fetching data for ${type}:`, error);
+        alert(`Error fetching data for ${type}: ${error.message}`);
       });
   });
 };
+
 
 // Set default chart load
 document.addEventListener("DOMContentLoaded", () => {
