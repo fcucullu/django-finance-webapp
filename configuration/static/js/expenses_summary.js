@@ -7,20 +7,17 @@ let shareChartInstance = null;
 const renderLineChart = (chartInstance, canvasId, jsonData) => {
   const ctx = document.getElementById(canvasId).getContext('2d');
 
-  // Convert the JSON data to the correct format for Chart.js
   const labels = jsonData.labels;
   const datasets = jsonData.datasets.map(dataset => ({
     label: dataset.label,
-    data: dataset.data.map(value => Number(value)),  // Convert Decimal to Number
+    data: dataset.data.map(value => Number(value)),
     borderWidth: dataset.borderWidth
   }));
 
-  // Destroy the existing chart instance if it exists
   if (chartInstance) {
     chartInstance.destroy();
   }
 
-  // Create a new Chart.js instance
   return new Chart(ctx, {
     type: "line",
     data: {
@@ -29,10 +26,6 @@ const renderLineChart = (chartInstance, canvasId, jsonData) => {
     },
     options: {
       plugins: {
-        title: {
-          display: true,
-          text: 'Your Chart Title'
-        },
         legend: {
           align: "start"
         }
@@ -42,7 +35,7 @@ const renderLineChart = (chartInstance, canvasId, jsonData) => {
 };
 
 // Function to render a polar area chart
-const renderPolarAreaChart = (chartInstance, canvasId, labels, data, chartTitle = '') => {
+const renderPolarAreaChart = (chartInstance, canvasId, jsonData) => {
   const ctx = document.getElementById(canvasId).getContext('2d');
 
   if (chartInstance) {
@@ -52,21 +45,15 @@ const renderPolarAreaChart = (chartInstance, canvasId, labels, data, chartTitle 
   return new Chart(ctx, {
     type: "polarArea",
     data: {
-      labels: labels,
-      datasets: [
-        {
-          label: "Expenses",
-          data: data,
-          borderWidth: 1
-        }
-      ]
+      labels: jsonData.labels,
+      datasets: [{
+        label: "Expenses",
+        data: jsonData.datasets[0].data,
+        borderWidth: 1
+      }]
     },
     options: {
       plugins: {
-        title: {
-          display: false,
-          text: chartTitle
-        },
         legend: {
           align: "start"
         }
@@ -75,8 +62,8 @@ const renderPolarAreaChart = (chartInstance, canvasId, labels, data, chartTitle 
   });
 };
 
-// Function to render a table and print to console
-const renderTable = (tableId, data) => {
+// Function to render a table
+const renderTable = (tableId, jsonData) => {
   const table = document.getElementById(tableId);
   let tableHtml = `
     <thead>
@@ -90,7 +77,8 @@ const renderTable = (tableId, data) => {
   let totalSum = 0;
   let itemCount = 0;
 
-  for (const [category, average] of Object.entries(data)) {
+  jsonData.labels.forEach((category, index) => {
+    const average = jsonData.datasets[0].data[index];
     const averageNumber = Number(average);
     if (!isNaN(averageNumber)) {
       totalSum += averageNumber;
@@ -102,7 +90,7 @@ const renderTable = (tableId, data) => {
         <td>${category}</td>
         <td>${isNaN(averageNumber) ? "N/A" : averageNumber.toFixed(2)}</td>
       </tr>`;
-  }
+  });
 
   const totalAverage = itemCount > 0 ? (totalSum / itemCount).toFixed(2) : "N/A";
 
@@ -148,8 +136,7 @@ const getChartData = (interval) => {
             shareChartInstance = renderPolarAreaChart(
               shareChartInstance,
               "share_chart",
-              Object.keys(expenses_by_category),
-              Object.values(expenses_by_category)
+              expenses_by_category,
             );
             break;
           default:
