@@ -156,8 +156,8 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
-DEFAULT_DAYS_IN_TIME_INTERVALS = {"Year": [365, "YE"],
-                                  "Quarter": [90, "QE"],
-                                  "Month": [30, "ME"],
-                                  "Week": [7, "W"]
+DEFAULT_DAYS_IN_TIME_INTERVALS = {"Year": [365, "M"],
+                                  "Quarter": [90, "M"],
+                                  "Month": [30, "D"],
+                                  "Week": [7, "D"]
 }

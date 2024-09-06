@@ -11,7 +11,7 @@ import json
 from django.http import JsonResponse
 from django.db.models import Q
 from balance.models import Balance
-from django.db.models import Sum
+from django.db.models import Sum, Avg
 import datetime
 import pandas as pd
 from collections import defaultdict
@@ -196,11 +196,10 @@ def get_expenses_by_category(request, interval):
     # Get the calculation_type from query parameters
     calculation_type = request.GET.get('calculation_type')
 
-    print(f"\n### Received Calculation Type: {calculation_type} ###")
-
     try:
         today = datetime.date.today()
-        delta_days = DEFAULT_DAYS_IN_TIME_INTERVALS.get(interval, [365])[0]
+        delta_days = DEFAULT_DAYS_IN_TIME_INTERVALS.get(interval)[0]
+        interval = DEFAULT_DAYS_IN_TIME_INTERVALS.get(interval)[1]
         start_date = today - datetime.timedelta(days=delta_days)
 
         expenses = Expense.objects.filter(owner=request.user, date__gte=start_date, date__lte=today)
@@ -213,35 +212,30 @@ def get_expenses_by_category(request, interval):
         category_list = list(set(map(get_category, expenses)))
 
         def calculate_total(request, start_date, today, interval):
-            print("\nCalculating Total...\n")
             total_result = build_datasets_for_total_chart(request, start_date, today, interval)
-            print(f"\n### Total Calculation Result: {total_result} ###\n")
             return total_result
 
         def calculate_mean(category):
             mean_result = expenses.filter(category=category).aggregate(mean_amount=Avg('amount'))['mean_amount'] or 0
-            print(f"\n### Mean for {category}: {mean_result} ###\n")
             return mean_result
 
-        def calculate_proportion(category):
+        def calculate_share(category):
             total_expense = expenses.aggregate(total=Sum('amount'))['total'] or 1
             category_total = expenses.filter(category=category).aggregate(total_amount=Sum('amount'))['total_amount'] or 0
-            proportion_result = (category_total / total_expense) * 100 if total_expense > 0 else 0
-            print(f"\n### Proportion for {category}: {proportion_result}% ###\n")
-            return proportion_result
+            share_result = (category_total / total_expense) * 100 if total_expense > 0 else 0
+            return share_result
 
         calculation_function_map = {
             "total": lambda: calculate_total(request, start_date, today, interval),
             "mean": lambda category: calculate_mean(category),
-            "proportions": lambda category: calculate_proportion(category),
+            "share": lambda category: calculate_share(category),
         }
 
         calculation_function = calculation_function_map.get(calculation_type, lambda: None)
 
         if calculation_type == "total":
             result = calculation_function()
-        elif calculation_type in ["mean", "proportions"]:
-            print(f"\n### Categories to Process: {category_list} ###\n")
+        elif calculation_type in ["mean", "share"]:
             result = {
                 'labels': category_list,
                 'datasets': [{
@@ -253,13 +247,9 @@ def get_expenses_by_category(request, interval):
         else:
             result = {"error": "Invalid calculation type."}
 
-        print(f"\n### Final Result for {calculation_type}: {result} ###\n")
-
         return JsonResponse({'expenses_by_category': result}, safe=False)
 
     except Exception as e:
-        print(f"\n### Exception Occurred: {str(e)} ###")
-        print(traceback.format_exc())
         return JsonResponse({'error': 'Internal server error'}, status=500)
 
 
@@ -267,42 +257,55 @@ def get_expenses_by_category(request, interval):
 
 def get_expenses_series_by_category(request, start_date, today):
     expenses = Expense.objects.filter(owner=request.user, date__gte=start_date, date__lte=today)
-
-    category_dataframes = defaultdict(pd.DataFrame)
-
+    data = pd.DataFrame()
     for expense in expenses:
-        category = expense.category
-        expense_df = pd.DataFrame({
+        exp_data = pd.DataFrame({
             'date': [expense.date],
-            'amount': [float(expense.amount)]
+            'amount': [float(expense.amount)],
+            "category": [expense.category]
         })
-        category_dataframes[category] = pd.concat([category_dataframes[category], expense_df], ignore_index=True)
+        data = pd.concat([data, exp_data], ignore_index=True)
+    return data    
 
-    return dict(category_dataframes)
-
-
-def group_data_by_interval(category_dataframes, interval):
-    for category, df in category_dataframes.items():
-        df['date'] = pd.to_datetime(df['date'])
-        group_by = DEFAULT_DAYS_IN_TIME_INTERVALS[interval][1]
-        df_grouped = df.resample(group_by, on='date').sum()
-        category_dataframes[category] = df_grouped
-
-    return category_dataframes
+def group_data_by_interval(data, interval):
+    data['date'] = pd.to_datetime(data['date']).dt.to_period(interval)
+    pivot_data = data.pivot_table(index='date', columns='category', values='amount', aggfunc='sum', fill_value=0)
+    
+    # Create a complete date range (include missing months)
+    all_months = pd.period_range(start=data['date'].min(), end=data['date'].max(), freq=interval)
+    pivot_data = pivot_data.reindex(all_months, fill_value=0)
+    
+    pivot_data = pivot_data.reset_index()
+    return pivot_data
 
 
 def build_datasets_for_total_chart(request, start_date, today, interval):
     data = get_expenses_series_by_category(request, start_date, today)
     data = group_data_by_interval(data, interval)
+    print(data)
+    
 
+
+    # Extract labels for the x-axis from the date/index column
+    labels = [str(label) for label in data["index"]]
+    print("sdkjfhskdjnsalkjfd")
+    # Initialize an empty list for the datasets
     datasets = []
-    for category, df in data.items():
-        datasets.append({
-            'label': category,
-            'data': df['amount'].tolist(),
-            'borderWidth': 1,
-        })
-
-    labels = data[next(iter(data))].index.strftime('%Y-%m').tolist() if data else []
-    response_data = {'datasets': datasets, 'labels': labels}
-    return response_data
+    
+    # Iterate over the columns, skipping the date/index column
+    for column in data.columns:
+        if column != 'index':
+            datasets.append({
+                'label': column,  # Use the column name as the dataset label
+                'data': data[column].tolist(),  # Convert the column data to a list
+                'borderWidth': 1
+            })
+    
+    # Construct the final Chart.js data structure
+    chart_data = {
+        'labels': labels,  # x-axis labels
+        'datasets': datasets  # y-axis datasets
+    }
+    
+    print(chart_data)
+    return chart_data

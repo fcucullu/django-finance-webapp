@@ -45,12 +45,12 @@ const renderPolarAreaChart = (chartInstance, canvasId, jsonData) => {
   return new Chart(ctx, {
     type: "polarArea",
     data: {
-      labels: jsonData.labels,
-      datasets: [{
-        label: "Expenses",
-        data: jsonData.datasets[0].data,
-        borderWidth: 1
-      }]
+      labels: jsonData.labels,  // Use the provided labels
+      datasets: jsonData.datasets.map(dataset => ({
+        label: dataset.label,
+        data: dataset.data.map(value => Number(value).toFixed(0)),  // Ensure percentages are formatted to 2 decimal places
+        borderWidth: dataset.borderWidth
+      }))
     },
     options: {
       plugins: {
@@ -108,7 +108,7 @@ const renderTable = (tableId, jsonData) => {
 
 // Function to get data and render charts/tables
 const getChartData = (interval) => {
-  const types = ["total", "mean", "proportions"];
+  const types = ["total", "mean", "share"];
 
   types.forEach((type) => {
     const url = `/expenses/get_expenses_by_category/${interval}?calculation_type=${type}`;
@@ -136,7 +136,7 @@ const getChartData = (interval) => {
           case "mean":
             renderTable("mean_table", expenses_by_category);
             break;
-          case "proportions":
+          case "share":
             shareChartInstance = renderPolarAreaChart(
               shareChartInstance,
               "share_chart",
