@@ -282,13 +282,9 @@ def group_data_by_interval(data, interval):
 def build_datasets_for_total_chart(request, start_date, today, interval):
     data = get_expenses_series_by_category(request, start_date, today)
     data = group_data_by_interval(data, interval)
-    print(data)
     
-
-
     # Extract labels for the x-axis from the date/index column
     labels = [str(label) for label in data["index"]]
-    print("sdkjfhskdjnsalkjfd")
     # Initialize an empty list for the datasets
     datasets = []
     
@@ -307,5 +303,4 @@ def build_datasets_for_total_chart(request, start_date, today, interval):
         'datasets': datasets  # y-axis datasets
     }
     
-    print(chart_data)
     return chart_data

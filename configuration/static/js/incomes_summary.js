@@ -1,10 +1,18 @@
+// Initialize chart instances
 let totalChartInstance = null;
 let meanTableInstance = null;
 let shareChartInstance = null;
 
 // Function to render a line chart
-const renderLineChart = (chartInstance, canvasId, chartTitle, labels, data) => {
-  const ctx = document.getElementById(canvasId);
+const renderLineChart = (chartInstance, canvasId, jsonData) => {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+
+  const labels = jsonData.labels;
+  const datasets = jsonData.datasets.map(dataset => ({
+    label: dataset.label,
+    data: dataset.data.map(value => Number(value)),
+    borderWidth: dataset.borderWidth
+  }));
 
   if (chartInstance) {
     chartInstance.destroy();
@@ -14,37 +22,21 @@ const renderLineChart = (chartInstance, canvasId, chartTitle, labels, data) => {
     type: "line",
     data: {
       labels: labels,
-      datasets: [
-        {
-          label: "Incomes",
-          data: data,
-          borderWidth: 1,
-        },
-      ],
+      datasets: datasets
     },
     options: {
       plugins: {
-        title: {
-          display: false,
-          text: chartTitle,
-        },
         legend: {
-          align: "start",
-        },
-      },
-    },
+          align: "start"
+        }
+      }
+    }
   });
 };
 
 // Function to render a polar area chart
-const renderPolarAreaChart = (
-  chartInstance,
-  canvasId,
-  chartTitle,
-  labels,
-  data
-) => {
-  const ctx = document.getElementById(canvasId);
+const renderPolarAreaChart = (chartInstance, canvasId, jsonData) => {
+  const ctx = document.getElementById(canvasId).getContext('2d');
 
   if (chartInstance) {
     chartInstance.destroy();
@@ -53,31 +45,25 @@ const renderPolarAreaChart = (
   return new Chart(ctx, {
     type: "polarArea",
     data: {
-      labels: labels,
-      datasets: [
-        {
-          label: "Incomes",
-          data: data,
-          borderWidth: 1,
-        },
-      ],
+      labels: jsonData.labels,  // Use the provided labels
+      datasets: jsonData.datasets.map(dataset => ({
+        label: dataset.label,
+        data: dataset.data.map(value => Number(value).toFixed(0)),  // Ensure percentages are formatted to 2 decimal places
+        borderWidth: dataset.borderWidth
+      }))
     },
     options: {
       plugins: {
-        title: {
-          display: false,
-          text: chartTitle,
-        },
         legend: {
-          align: "start",
-        },
-      },
-    },
+          align: "start"
+        }
+      }
+    }
   });
 };
 
-// Function to render a table and print to console
-const renderTable = (tableId, data) => {
+// Function to render a table
+const renderTable = (tableId, jsonData) => {
   const table = document.getElementById(tableId);
   let tableHtml = `
     <thead>
@@ -88,14 +74,15 @@ const renderTable = (tableId, data) => {
     </thead>
     <tbody>`;
 
-  let totalSum = 0; // Initialize total sum for average incomes
-  let itemCount = 0; // Initialize item count for calculating the total average
+  let totalSum = 0;
+  let itemCount = 0;
 
-  for (const [category, average] of Object.entries(data)) {
-    const averageNumber = Number(average); // Convert to number
+  jsonData.labels.forEach((category, index) => {
+    const average = jsonData.datasets[0].data[index];
+    const averageNumber = Number(average);
     if (!isNaN(averageNumber)) {
-      totalSum += averageNumber; // Accumulate total sum
-      itemCount += 1; // Increment item count
+      totalSum += averageNumber;
+      itemCount += 1;
     }
 
     tableHtml += `
@@ -103,11 +90,9 @@ const renderTable = (tableId, data) => {
         <td>${category}</td>
         <td>${isNaN(averageNumber) ? "N/A" : averageNumber.toFixed(2)}</td>
       </tr>`;
-  }
+  });
 
-  // Calculate total average
-  const totalAverage =
-    itemCount > 0 ? (totalSum / itemCount).toFixed(2) : "N/A";
+  const totalAverage = itemCount > 0 ? (totalSum / itemCount).toFixed(2) : "N/A";
 
   tableHtml += `
     </tbody>
@@ -119,19 +104,17 @@ const renderTable = (tableId, data) => {
     </tfoot>`;
 
   table.innerHTML = tableHtml;
-
-  // Print category and average to the console
-  console.log(`Total Average: ${totalAverage}`);
 };
 
 // Function to get data and render charts/tables
 const getChartData = (interval) => {
-  const types = ["total", "mean", "proportions"];
+  const types = ["total", "mean", "share"];
 
   types.forEach((type) => {
-    fetch(
-      `/incomes/get_incomes_by_category/${interval}?calculation_type=${type}`
-    )
+    const url = `/incomes/get_incomes_by_category/${interval}?calculation_type=${type}`;
+    console.log(`Fetching data from: ${url}`);
+
+    fetch(url)
       .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
@@ -140,31 +123,24 @@ const getChartData = (interval) => {
       })
       .then((results) => {
         const incomes_by_category = results.incomes_by_category || {};
-        const [labels, data] = [
-          Object.keys(incomes_by_category),
-          Object.values(incomes_by_category),
-        ];
+        console.log(`Results for ${type}:`, incomes_by_category);
 
         switch (type) {
           case "total":
             totalChartInstance = renderLineChart(
               totalChartInstance,
               "total_chart",
-              "Total Incomes by Category",
-              labels,
-              data
+              incomes_by_category
             );
             break;
           case "mean":
             renderTable("mean_table", incomes_by_category);
             break;
-          case "proportions":
+          case "share":
             shareChartInstance = renderPolarAreaChart(
               shareChartInstance,
               "share_chart",
-              "Income Share by Category",
-              labels,
-              data
+              incomes_by_category,
             );
             break;
           default:
@@ -172,25 +148,22 @@ const getChartData = (interval) => {
         }
       })
       .catch((error) => {
-        console.error("Error fetching data:", error);
+        console.error(`Error fetching data for ${type}:`, error);
+        alert(`Error fetching data for ${type}: ${error.message}`);
       });
   });
 };
 
+
 // Set default chart load
 document.addEventListener("DOMContentLoaded", () => {
   const defaultInterval = "Year";
-
-  // Initialize charts and table with default interval
   getChartData(defaultInterval);
 
-  // Add event listener for interval change
   document
     .getElementById("intervalSelect")
     .addEventListener("change", (event) => {
       const selectedInterval = event.target.value;
-
-      // Fetch data for all charts and table based on selected interval
       getChartData(selectedInterval);
     });
 });

@@ -186,44 +186,119 @@ def delete_income(request, id):
     messages.success(request, 'Income deleted successfully')
     return redirect('incomes')
 
+import traceback
 
 @login_required(login_url='/authentication/login')
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
-def get_incomes_by_category(request, interval, calculation_type="total"):
-    today = datetime.date.today()
-    delta_days = DEFAULT_DAYS_IN_TIME_INTERVALS[interval]
-    start_date = today - datetime.timedelta(days=delta_days)
+def get_incomes_by_category(request, interval):
+    # Get the calculation_type from query parameters
+    calculation_type = request.GET.get('calculation_type')
 
+    try:
+        today = datetime.date.today()
+        delta_days = DEFAULT_DAYS_IN_TIME_INTERVALS.get(interval)[0]
+        interval = DEFAULT_DAYS_IN_TIME_INTERVALS.get(interval)[1]
+        start_date = today - datetime.timedelta(days=delta_days)
+
+        incomes = Income.objects.filter(owner=request.user, date__gte=start_date, date__lte=today)
+
+        result = {}
+
+        def get_category(income):
+            return income.category
+
+        category_list = list(set(map(get_category, incomes)))
+
+        def calculate_total(request, start_date, today, interval):
+            total_result = build_datasets_for_total_chart(request, start_date, today, interval)
+            return total_result
+
+        def calculate_mean(category):
+            mean_result = incomes.filter(category=category).aggregate(mean_amount=Avg('amount'))['mean_amount'] or 0
+            return mean_result
+
+        def calculate_share(category):
+            total_income = incomes.aggregate(total=Sum('amount'))['total'] or 1
+            category_total = incomes.filter(category=category).aggregate(total_amount=Sum('amount'))['total_amount'] or 0
+            share_result = (category_total / total_income) * 100 if total_income > 0 else 0
+            return share_result
+
+        calculation_function_map = {
+            "total": lambda: calculate_total(request, start_date, today, interval),
+            "mean": lambda category: calculate_mean(category),
+            "share": lambda category: calculate_share(category),
+        }
+
+        calculation_function = calculation_function_map.get(calculation_type, lambda: None)
+
+        if calculation_type == "total":
+            result = calculation_function()
+        elif calculation_type in ["mean", "share"]:
+            result = {
+                'labels': category_list,
+                'datasets': [{
+                    'label': calculation_type.capitalize(),
+                    'data': [calculation_function(category) for category in category_list],
+                    'borderWidth': 1,
+                }]
+            }
+        else:
+            result = {"error": "Invalid calculation type."}
+
+        return JsonResponse({'incomes_by_category': result}, safe=False)
+
+    except Exception as e:
+        return JsonResponse({'error': 'Internal server error'}, status=500)
+
+
+
+
+def get_incomes_series_by_category(request, start_date, today):
     incomes = Income.objects.filter(owner=request.user, date__gte=start_date, date__lte=today)
+    data = pd.DataFrame()
+    for income in incomes:
+        exp_data = pd.DataFrame({
+            'date': [income.date],
+            'amount': [float(income.amount)],
+            "category": [income.category]
+        })
+        data = pd.concat([data, exp_data], ignore_index=True)
+    return data    
 
-    result = {}
+def group_data_by_interval(data, interval):
+    data['date'] = pd.to_datetime(data['date']).dt.to_period(interval)
+    pivot_data = data.pivot_table(index='date', columns='category', values='amount', aggfunc='sum', fill_value=0)
+    
+    # Create a complete date range (include missing months)
+    all_months = pd.period_range(start=data['date'].min(), end=data['date'].max(), freq=interval)
+    pivot_data = pivot_data.reindex(all_months, fill_value=0)
+    
+    pivot_data = pivot_data.reset_index()
+    return pivot_data
 
-    def get_category(income):
-        return income.category
 
-    category_list = list(set(map(get_category, incomes)))
-
-    def calculate_total(category):
-        return incomes.filter(category=category).aggregate(total_amount=Sum('amount'))['total_amount'] or 0
-
-    def calculate_mean(category):
-        return incomes.filter(category=category).aggregate(mean_amount=Avg('amount'))['mean_amount'] or 0
-
-    def calculate_proportion(category):
-        total_income = incomes.aggregate(total=Sum('amount'))['total'] or 1
-        category_total = calculate_total(category)
-        return (category_total / total_income) * 100 if total_income > 0 else 0
-
-    calculation_function_map = {
-        "total": calculate_total,
-        "mean": calculate_mean,
-        "proportions": calculate_proportion,
+def build_datasets_for_total_chart(request, start_date, today, interval):
+    data = get_incomes_series_by_category(request, start_date, today)
+    data = group_data_by_interval(data, interval)
+    
+    # Extract labels for the x-axis from the date/index column
+    labels = [str(label) for label in data["index"]]
+    # Initialize an empty list for the datasets
+    datasets = []
+    
+    # Iterate over the columns, skipping the date/index column
+    for column in data.columns:
+        if column != 'index':
+            datasets.append({
+                'label': column,  # Use the column name as the dataset label
+                'data': data[column].tolist(),  # Convert the column data to a list
+                'borderWidth': 1
+            })
+    
+    # Construct the final Chart.js data structure
+    chart_data = {
+        'labels': labels,  # x-axis labels
+        'datasets': datasets  # y-axis datasets
     }
-
-    calculation_function = calculation_function_map.get(calculation_type, calculate_total)
-
-    for c in category_list:
-        result[c] = calculation_function(c)
-
-    return JsonResponse({'incomes_by_category': result}, safe=False)
-
+    
+    return chart_data
