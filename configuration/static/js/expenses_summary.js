@@ -112,8 +112,6 @@ const getChartData = (interval) => {
 
   types.forEach((type) => {
     const url = `/expenses/get_expenses_by_category/${interval}?calculation_type=${type}`;
-    console.log(`Fetching data from: ${url}`);
-
     fetch(url)
       .then((res) => {
         if (!res.ok) {
@@ -123,7 +121,6 @@ const getChartData = (interval) => {
       })
       .then((results) => {
         const expenses_by_category = results.expenses_by_category || {};
-        console.log(`Results for ${type}:`, expenses_by_category);
 
         switch (type) {
           case "total":
@@ -144,11 +141,9 @@ const getChartData = (interval) => {
             );
             break;
           default:
-            console.error("Invalid calculation type.");
         }
       })
       .catch((error) => {
-        console.error(`Error fetching data for ${type}:`, error);
         alert(`Error fetching data for ${type}: ${error.message}`);
       });
   });

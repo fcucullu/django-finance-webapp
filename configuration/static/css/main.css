@@ -72,12 +72,12 @@
 
 /* Pagination styling */
 .pagination .page-item.active .page-link {
-  background-color: #007bff;
-  border-color: #007bff;
+  background-color: #075AAE;
+  border-color: #075AAE;
 }
 
 .pagination .page-link {
-  color: #007bff;
+  color: #075AAE;
 }
 
 /* Tables styling to hide/show */

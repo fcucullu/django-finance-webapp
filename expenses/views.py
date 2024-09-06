@@ -14,7 +14,6 @@ from balance.models import Balance
 from django.db.models import Sum, Avg
 import datetime
 import pandas as pd
-from collections import defaultdict
 from configuration.settings import DEFAULT_DAYS_IN_TIME_INTERVALS
 
 #########################################################

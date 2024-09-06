@@ -5,13 +5,13 @@ let shareChartInstance = null;
 
 // Function to render a line chart
 const renderLineChart = (chartInstance, canvasId, jsonData) => {
-  const ctx = document.getElementById(canvasId).getContext('2d');
+  const ctx = document.getElementById(canvasId).getContext("2d");
 
   const labels = jsonData.labels;
-  const datasets = jsonData.datasets.map(dataset => ({
+  const datasets = jsonData.datasets.map((dataset) => ({
     label: dataset.label,
-    data: dataset.data.map(value => Number(value)),
-    borderWidth: dataset.borderWidth
+    data: dataset.data.map((value) => Number(value)),
+    borderWidth: dataset.borderWidth,
   }));
 
   if (chartInstance) {
@@ -22,21 +22,21 @@ const renderLineChart = (chartInstance, canvasId, jsonData) => {
     type: "line",
     data: {
       labels: labels,
-      datasets: datasets
+      datasets: datasets,
     },
     options: {
       plugins: {
         legend: {
-          align: "start"
-        }
-      }
-    }
+          align: "start",
+        },
+      },
+    },
   });
 };
 
 // Function to render a polar area chart
 const renderPolarAreaChart = (chartInstance, canvasId, jsonData) => {
-  const ctx = document.getElementById(canvasId).getContext('2d');
+  const ctx = document.getElementById(canvasId).getContext("2d");
 
   if (chartInstance) {
     chartInstance.destroy();
@@ -45,20 +45,20 @@ const renderPolarAreaChart = (chartInstance, canvasId, jsonData) => {
   return new Chart(ctx, {
     type: "polarArea",
     data: {
-      labels: jsonData.labels,  // Use the provided labels
-      datasets: jsonData.datasets.map(dataset => ({
+      labels: jsonData.labels, // Use the provided labels
+      datasets: jsonData.datasets.map((dataset) => ({
         label: dataset.label,
-        data: dataset.data.map(value => Number(value).toFixed(0)),  // Ensure percentages are formatted to 2 decimal places
-        borderWidth: dataset.borderWidth
-      }))
+        data: dataset.data.map((value) => Number(value).toFixed(0)), // Ensure percentages are formatted to 2 decimal places
+        borderWidth: dataset.borderWidth,
+      })),
     },
     options: {
       plugins: {
         legend: {
-          align: "start"
-        }
-      }
-    }
+          align: "start",
+        },
+      },
+    },
   });
 };
 
@@ -92,7 +92,8 @@ const renderTable = (tableId, jsonData) => {
       </tr>`;
   });
 
-  const totalAverage = itemCount > 0 ? (totalSum / itemCount).toFixed(2) : "N/A";
+  const totalAverage =
+    itemCount > 0 ? (totalSum / itemCount).toFixed(2) : "N/A";
 
   tableHtml += `
     </tbody>
@@ -112,7 +113,6 @@ const getChartData = (interval) => {
 
   types.forEach((type) => {
     const url = `/incomes/get_incomes_by_category/${interval}?calculation_type=${type}`;
-    console.log(`Fetching data from: ${url}`);
 
     fetch(url)
       .then((res) => {
@@ -123,7 +123,6 @@ const getChartData = (interval) => {
       })
       .then((results) => {
         const incomes_by_category = results.incomes_by_category || {};
-        console.log(`Results for ${type}:`, incomes_by_category);
 
         switch (type) {
           case "total":
@@ -140,20 +139,17 @@ const getChartData = (interval) => {
             shareChartInstance = renderPolarAreaChart(
               shareChartInstance,
               "share_chart",
-              incomes_by_category,
+              incomes_by_category
             );
             break;
           default:
-            console.error("Invalid calculation type.");
         }
       })
       .catch((error) => {
-        console.error(`Error fetching data for ${type}:`, error);
         alert(`Error fetching data for ${type}: ${error.message}`);
       });
   });
 };
-
 
 // Set default chart load
 document.addEventListener("DOMContentLoaded", () => {

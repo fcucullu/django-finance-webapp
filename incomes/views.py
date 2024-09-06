@@ -11,8 +11,9 @@ import json
 from django.http import JsonResponse
 from django.db.models import Q
 from balance.models import Balance
-from django.db.models import Sum
+from django.db.models import Sum, Avg
 import datetime
+import pandas as pd
 from configuration.settings import DEFAULT_DAYS_IN_TIME_INTERVALS
 
 #########################################################
@@ -193,7 +194,7 @@ import traceback
 def get_incomes_by_category(request, interval):
     # Get the calculation_type from query parameters
     calculation_type = request.GET.get('calculation_type')
-
+    
     try:
         today = datetime.date.today()
         delta_days = DEFAULT_DAYS_IN_TIME_INTERVALS.get(interval)[0]
@@ -201,14 +202,14 @@ def get_incomes_by_category(request, interval):
         start_date = today - datetime.timedelta(days=delta_days)
 
         incomes = Income.objects.filter(owner=request.user, date__gte=start_date, date__lte=today)
-
+        
         result = {}
 
         def get_category(income):
             return income.category
 
         category_list = list(set(map(get_category, incomes)))
-
+        
         def calculate_total(request, start_date, today, interval):
             total_result = build_datasets_for_total_chart(request, start_date, today, interval)
             return total_result
@@ -228,9 +229,9 @@ def get_incomes_by_category(request, interval):
             "mean": lambda category: calculate_mean(category),
             "share": lambda category: calculate_share(category),
         }
-
+        
         calculation_function = calculation_function_map.get(calculation_type, lambda: None)
-
+        
         if calculation_type == "total":
             result = calculation_function()
         elif calculation_type in ["mean", "share"]:
@@ -242,11 +243,12 @@ def get_incomes_by_category(request, interval):
                     'borderWidth': 1,
                 }]
             }
+            print(calculation_type, result)
         else:
             result = {"error": "Invalid calculation type."}
-
+        
         return JsonResponse({'incomes_by_category': result}, safe=False)
-
+    
     except Exception as e:
         return JsonResponse({'error': 'Internal server error'}, status=500)
 
